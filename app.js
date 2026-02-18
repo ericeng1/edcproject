@@ -1,12 +1,3 @@
-async function testConnection() {
-  const { data, error } = await supabase.from("brands").select("*");
-
-  console.log("TEST DATA:", data);
-  console.log("TEST ERROR:", error);
-}
-
-testConnection();
-
 
 import { supabase } from "./supabaseClient.js";
 
@@ -16,6 +7,7 @@ const materialSelect = document.getElementById("material");
 const form = document.getElementById("itemForm");
 const status = document.getElementById("status");
 
+// Helper to create <option>
 function createOption(value, text) {
   const option = document.createElement("option");
   option.value = value;
@@ -23,72 +15,62 @@ function createOption(value, text) {
   return option;
 }
 
-// ---------- LOAD BRANDS ----------
-async function loadBrands() {
-  const { data, error } = await supabase
-    .from("brands")
-    .select("*")
-    .order("company");
+// ---------- LOAD DROPDOWNS ----------
+async function loadDropdown(table, selectElement, displayFunc) {
+  const { data, error } = await supabase.from(table).select("*").order("id");
 
   if (error) {
-    console.error(error);
+    console.error(`Error loading ${table}:`, error);
     return;
   }
 
-  makerSelect.appendChild(createOption("", "-- Select Brand --"));
+  // Add default empty option
+  selectElement.appendChild(createOption("", `-- Select ${table.slice(0, -1)} --`));
 
-  data.forEach(brand => {
-    const name = `${brand.company || ""} ${brand.first_name || ""} ${brand.last_name || ""}`.trim();
-    makerSelect.appendChild(createOption(brand.id, name));
+  data.forEach(row => {
+    const displayText = displayFunc(row);
+    selectElement.appendChild(createOption(row.id, displayText));
   });
 }
 
-// ---------- LOAD CATEGORIES ----------
-async function loadCategories() {
-  const { data, error } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  categorySelect.appendChild(createOption("", "-- Select Category --"));
-
-  data.forEach(cat => {
-    categorySelect.appendChild(createOption(cat.id, cat.name));
-  });
-}
-
-// ---------- LOAD MATERIALS ----------
-async function loadMaterials() {
-  const { data, error } = await supabase
-    .from("materials")
-    .select("*")
-    .order("name");
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  materialSelect.appendChild(createOption("", "-- Select Material --"));
-
-  data.forEach(mat => {
-    materialSelect.appendChild(createOption(mat.id, mat.name));
-  });
-}
-
-// ---------- INIT ----------
+// Load brands, categories, materials
 async function init() {
-  await loadBrands();
-  await loadCategories();
-  await loadMaterials();
+  await loadDropdown("brands", makerSelect, row => {
+    return `${row.company || ""} ${row.first_name || ""} ${row.last_name || ""}`.trim();
+  });
+
+  await loadDropdown("categories", categorySelect, row => row.name);
+
+  await loadDropdown("materials", materialSelect, row => row.name);
 }
 
 init();
+
+// ---------- Make Select Searchable ----------
+function makeSearchable(selectElement) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.placeholder = `Search ${selectElement.id}...`;
+  input.className = "search-input";
+
+  selectElement.parentNode.insertBefore(input, selectElement);
+
+  input.addEventListener("input", () => {
+    const filter = input.value.toLowerCase();
+    Array.from(selectElement.options).forEach(option => {
+      if (option.textContent.toLowerCase().includes(filter) || option.value === "") {
+        option.style.display = "";
+      } else {
+        option.style.display = "none";
+      }
+    });
+  });
+}
+
+// Make dropdowns searchable
+makeSearchable(makerSelect);
+makeSearchable(categorySelect);
+makeSearchable(materialSelect);
 
 // ---------- FORM SUBMIT ----------
 form.addEventListener("submit", async (e) => {
