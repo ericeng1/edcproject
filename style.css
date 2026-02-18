@@ -1,4 +1,4 @@
-/* Basic Reset */
+/* Reset & Body */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,7 +23,7 @@ body {
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
 
-/* Form Title */
+/* Title */
 h1 {
   text-align: center;
   margin-bottom: 25px;
@@ -31,7 +31,7 @@ h1 {
   font-weight: 600;
 }
 
-/* Form Group (stacked fields) */
+/* Form Group */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -44,6 +44,7 @@ label {
   color: #34495e;
 }
 
+/* Inputs & Selects */
 input, select, textarea {
   padding: 10px 12px;
   border: 1px solid #d1d5db;
@@ -58,13 +59,29 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 5px rgba(45, 108, 223, 0.3);
 }
 
+/* Search Input above dropdowns */
+.search-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #2d6cdf;
+  box-shadow: 0 0 5px rgba(45, 108, 223, 0.3);
+}
+
 /* Textarea resize */
 textarea {
   resize: vertical;
   min-height: 60px;
 }
 
-/* Submit button */
+/* Submit Button */
 .submit-btn {
   width: 100%;
   padding: 12px;
@@ -102,19 +119,4 @@ textarea {
     font-size: 16px;
     padding: 10px;
   }
-}
-/* Search input above dropdowns */
-.search-input {
-  width: 100%;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #2d6cdf;
-  box-shadow: 0 0 5px rgba(45, 108, 223, 0.3);
 }

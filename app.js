@@ -1,9 +1,13 @@
-
 import { supabase } from "./supabaseClient.js";
 
 const makerSelect = document.getElementById("maker");
 const categorySelect = document.getElementById("category");
 const materialSelect = document.getElementById("material");
+
+const makerSearch = document.getElementById("maker-search");
+const categorySearch = document.getElementById("category-search");
+const materialSearch = document.getElementById("material-search");
+
 const form = document.getElementById("itemForm");
 const status = document.getElementById("status");
 
@@ -15,7 +19,7 @@ function createOption(value, text) {
   return option;
 }
 
-// ---------- LOAD DROPDOWNS ----------
+// Load dropdown with display text
 async function loadDropdown(table, selectElement, displayFunc) {
   const { data, error } = await supabase.from(table).select("*").order("id");
 
@@ -24,55 +28,39 @@ async function loadDropdown(table, selectElement, displayFunc) {
     return;
   }
 
-  // Add default empty option
+  selectElement.innerHTML = ""; // Clear existing
   selectElement.appendChild(createOption("", `-- Select ${table.slice(0, -1)} --`));
 
   data.forEach(row => {
-    const displayText = displayFunc(row);
-    selectElement.appendChild(createOption(row.id, displayText));
+    const text = displayFunc(row);
+    selectElement.appendChild(createOption(row.id, text));
   });
 }
 
-// Load brands, categories, materials
+// Load all dropdowns
 async function init() {
-  await loadDropdown("brands", makerSelect, row => {
-    return `${row.company || ""} ${row.first_name || ""} ${row.last_name || ""}`.trim();
-  });
-
+  await loadDropdown("brands", makerSelect, row => `${row.company || ""} ${row.first_name || ""} ${row.last_name || ""}`.trim());
   await loadDropdown("categories", categorySelect, row => row.name);
-
   await loadDropdown("materials", materialSelect, row => row.name);
 }
 
 init();
 
-// ---------- Make Select Searchable ----------
-function makeSearchable(selectElement) {
-  const input = document.createElement("input");
-  input.type = "text";
-  input.placeholder = `Search ${selectElement.id}...`;
-  input.className = "search-input";
-
-  selectElement.parentNode.insertBefore(input, selectElement);
-
-  input.addEventListener("input", () => {
-    const filter = input.value.toLowerCase();
+// Searchable dropdowns
+function makeSearchable(searchInput, selectElement) {
+  searchInput.addEventListener("input", () => {
+    const filter = searchInput.value.toLowerCase();
     Array.from(selectElement.options).forEach(option => {
-      if (option.textContent.toLowerCase().includes(filter) || option.value === "") {
-        option.style.display = "";
-      } else {
-        option.style.display = "none";
-      }
+      option.style.display = option.textContent.toLowerCase().includes(filter) || option.value === "" ? "" : "none";
     });
   });
 }
 
-// Make dropdowns searchable
-makeSearchable(makerSelect);
-makeSearchable(categorySelect);
-makeSearchable(materialSelect);
+makeSearchable(makerSearch, makerSelect);
+makeSearchable(categorySearch, categorySelect);
+makeSearchable(materialSearch, materialSelect);
 
-// ---------- FORM SUBMIT ----------
+// Form submit
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 

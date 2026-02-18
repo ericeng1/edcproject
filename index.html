@@ -11,25 +11,30 @@
   <div class="form-container">
     <h1>Add New Item</h1>
 
-    <form id="itemForm" class="form-grid">
+    <form id="itemForm">
 
-      <!-- Dropdowns -->
+      <!-- Brands -->
       <div class="form-group">
         <label for="maker">Brand</label>
+        <input type="text" id="maker-search" placeholder="Search Brand..." class="search-input">
         <select id="maker"></select>
       </div>
 
+      <!-- Categories -->
       <div class="form-group">
         <label for="category">Category</label>
+        <input type="text" id="category-search" placeholder="Search Category..." class="search-input">
         <select id="category"></select>
       </div>
 
+      <!-- Materials -->
       <div class="form-group">
         <label for="material">Material</label>
+        <input type="text" id="material-search" placeholder="Search Material..." class="search-input">
         <select id="material"></select>
       </div>
 
-      <!-- Inputs -->
+      <!-- Other Inputs -->
       <div class="form-group">
         <label for="born_on_date">Born On Date</label>
         <input type="date" id="born_on_date" />
