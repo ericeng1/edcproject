@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Environment variables (API keys, secrets)
+.env
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log
+
+# Build folders
+dist/
+build/
+
+# VS Code settings (optional)
+.vscode/
