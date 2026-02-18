@@ -1,3 +1,13 @@
+async function testConnection() {
+  const { data, error } = await supabase.from("brands").select("*");
+
+  console.log("TEST DATA:", data);
+  console.log("TEST ERROR:", error);
+}
+
+testConnection();
+
+
 import { supabase } from "./supabaseClient.js";
 
 const makerSelect = document.getElementById("maker");
