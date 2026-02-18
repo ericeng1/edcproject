@@ -39,7 +39,7 @@ async function loadDropdown(table, selectElement, displayFunc) {
 
 // Load all dropdowns
 async function init() {
-  await loadDropdown("brands", makerSelect, row => `${row.company || ""} ${row.first_name || ""} ${row.last_name || ""}`.trim());
+  await loadDropdown("brands", makerSelect, row => row.company;
   await loadDropdown("categories", categorySelect, row => row.name);
   await loadDropdown("materials", materialSelect, row => row.name);
 }
