@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Item Entry</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+    <h1>Add Item</h1>
+
+    <form id="itemForm">
+
+      <label>Brand</label>
+      <select id="maker"></select>
+
+      <label>Category</label>
+      <select id="category"></select>
+
+      <label>Material</label>
+      <select id="material"></select>
+
+      <label>Born On Date</label>
+      <input type="date" id="born_on_date" />
+
+      <label>MSRP</label>
+      <input type="number" id="msrp" step="0.01" />
+
+      <label>Size</label>
+      <input type="number" id="size" step="0.01" />
+
+      <label>Variant</label>
+      <input type="text" id="variant" />
+
+      <label>Extra</label>
+      <input type="text" id="extra" />
+
+      <label>Comments</label>
+      <textarea id="comments"></textarea>
+
+      <label>Image URL 1</label>
+      <input type="text" id="image1" />
+
+      <label>Image URL 2</label>
+      <input type="text" id="image2" />
+
+      <label>Image URL 3</label>
+      <input type="text" id="image3" />
+
+      <button type="submit">Save Item</button>
+
+    </form>
+
+    <p id="status"></p>
+
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
