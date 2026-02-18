@@ -59,21 +59,6 @@ input:focus, select:focus, textarea:focus {
   box-shadow: 0 0 5px rgba(45, 108, 223, 0.3);
 }
 
-/* Search Input above dropdowns */
-.search-input {
-  width: 100%;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #2d6cdf;
-  box-shadow: 0 0 5px rgba(45, 108, 223, 0.3);
-}
 
 /* Textarea resize */
 textarea {
