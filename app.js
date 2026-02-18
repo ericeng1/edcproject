@@ -6,30 +6,81 @@ const materialSelect = document.getElementById("material");
 const form = document.getElementById("itemForm");
 const status = document.getElementById("status");
 
-async function loadDropdown(table, selectElement) {
-  const { data, error } = await supabase.from(table).select("*");
+function createOption(value, text) {
+  const option = document.createElement("option");
+  option.value = value;
+  option.textContent = text;
+  return option;
+}
+
+// ---------- LOAD BRANDS ----------
+async function loadBrands() {
+  const { data, error } = await supabase
+    .from("brands")
+    .select("*")
+    .order("company");
 
   if (error) {
     console.error(error);
     return;
   }
 
-  data.forEach(row => {
-    const option = document.createElement("option");
-    option.value = row.id;
-    option.textContent = row.name || row.company || row.first_name;
-    selectElement.appendChild(option);
+  makerSelect.appendChild(createOption("", "-- Select Brand --"));
+
+  data.forEach(brand => {
+    const name = `${brand.company || ""} ${brand.first_name || ""} ${brand.last_name || ""}`.trim();
+    makerSelect.appendChild(createOption(brand.id, name));
   });
 }
 
+// ---------- LOAD CATEGORIES ----------
+async function loadCategories() {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .order("name");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  categorySelect.appendChild(createOption("", "-- Select Category --"));
+
+  data.forEach(cat => {
+    categorySelect.appendChild(createOption(cat.id, cat.name));
+  });
+}
+
+// ---------- LOAD MATERIALS ----------
+async function loadMaterials() {
+  const { data, error } = await supabase
+    .from("materials")
+    .select("*")
+    .order("name");
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  materialSelect.appendChild(createOption("", "-- Select Material --"));
+
+  data.forEach(mat => {
+    materialSelect.appendChild(createOption(mat.id, mat.name));
+  });
+}
+
+// ---------- INIT ----------
 async function init() {
-  await loadDropdown("brands", makerSelect);
-  await loadDropdown("categories", categorySelect);
-  await loadDropdown("materials", materialSelect);
+  await loadBrands();
+  await loadCategories();
+  await loadMaterials();
 }
 
 init();
 
+// ---------- FORM SUBMIT ----------
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
