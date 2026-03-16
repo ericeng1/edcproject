@@ -114,7 +114,6 @@
       font-size: clamp(42px, 6vw, 72px);
       letter-spacing: 0.06em;
       line-height: 1;
-      color: var(--text);
     }
 
     .page-header h1 span { color: var(--accent); }
@@ -149,7 +148,7 @@
 
     .stat-chip strong { color: var(--accent); font-weight: 700; margin-right: 5px; }
 
-    /* ── LOADING / EMPTY ── */
+    /* ── STATE MESSAGES ── */
     .state-msg {
       text-align: center;
       padding: 80px 20px;
@@ -189,7 +188,6 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 28px;
       letter-spacing: 0.08em;
-      color: var(--text);
     }
 
     .brand-maker {
@@ -220,7 +218,6 @@
       border-radius: 12px;
       overflow: hidden;
       transition: border-color 0.2s, transform 0.15s;
-      cursor: default;
       position: relative;
     }
 
@@ -246,13 +243,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: var(--border);
+      color: #333;
       font-size: 32px;
     }
 
-    .card-body {
-      padding: 14px 16px;
-    }
+    .card-body { padding: 14px 16px; }
 
     .card-category {
       font-size: 10px;
@@ -266,7 +261,6 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: 18px;
       letter-spacing: 0.05em;
-      color: var(--text);
       line-height: 1.2;
     }
 
@@ -284,10 +278,7 @@
       padding: 3px 8px;
       font-size: 11px;
       color: var(--muted);
-      letter-spacing: 0.03em;
     }
-
-    .meta-tag.highlight { color: var(--accent); border-color: rgba(200,150,74,0.3); }
 
     .card-footer {
       padding: 10px 16px 14px;
@@ -302,9 +293,6 @@
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--danger);
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     .public-badge {
@@ -332,7 +320,6 @@
 </head>
 <body>
 
-  <!-- TOP BAR -->
   <header class="topbar">
     <div class="topbar-brand">Showoffy</div>
     <div class="topbar-right">
@@ -342,20 +329,17 @@
     </div>
   </header>
 
-  <!-- PAGE HEADER -->
   <div class="page-header">
     <h1>My <span>Collection</span></h1>
     <p id="page-subtitle">Your items, grouped by brand</p>
   </div>
 
-  <!-- STATS -->
   <div class="stats-row" id="stats-row" style="display:none;">
     <div class="stat-chip"><strong id="stat-total">0</strong> Items</div>
     <div class="stat-chip"><strong id="stat-brands">0</strong> Brands</div>
     <div class="stat-chip"><strong id="stat-private">0</strong> Private</div>
   </div>
 
-  <!-- CONTENT -->
   <main class="content" id="content">
     <div class="state-msg" id="loading-msg">
       <div class="icon">⬡</div>
@@ -366,131 +350,145 @@
   <script type="module">
     import { supabase } from "./supabaseClient.js";
 
-    // ── AUTH GATE ──
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { window.location.href = "login.html"; }
-    const user = session.user;
+    // Wrap everything in an async IIFE so errors surface visibly
+    (async () => {
 
-    document.getElementById("user-email").textContent = user.email;
-    document.getElementById("signout-btn").addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    });
+      // ── AUTH GATE ──
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    // ── FETCH ITEMS with joined brand/category/material ──
-    const { data: items, error } = await supabase
-      .from("items")
-      .select(`
-        id, variant, size, msrp, born_on_date,
-        image_url1, image_url2, image_url3,
-        is_private, comments, extra,
-        maker_id,
-        brands ( id, company, first_name, last_name ),
-        categories ( name ),
-        materials ( name )
-      `)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
+      if (sessionError || !session) {
+        window.location.href = "login.html";
+        return;
+      }
 
-    const content = document.getElementById("loading-msg");
+      const user = session.user;
+      document.getElementById("user-email").textContent = user.email;
 
-    if (error) {
-      content.innerHTML = `<div class="icon">✕</div>Error loading items: ${error.message}`;
-      return;
-    }
+      document.getElementById("signout-btn").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+      });
 
-    if (!items || items.length === 0) {
-      content.innerHTML = `
-        <div class="icon">◻</div>
-        No items yet. <a href="index.html" style="color:var(--accent);text-decoration:none;">Add your first item →</a>`;
-      return;
-    }
+      // ── FETCH ITEMS ──
+      const { data: items, error } = await supabase
+        .from("items")
+        .select(`
+          id,
+          variant,
+          size,
+          msrp,
+          born_on_date,
+          image_url1,
+          image_url2,
+          image_url3,
+          is_private,
+          comments,
+          extra,
+          maker_id,
+          brands ( id, company, first_name, last_name ),
+          categories ( name ),
+          materials ( name )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-    // ── STATS ──
-    const statsRow = document.getElementById("stats-row");
-    statsRow.style.display = "flex";
-    document.getElementById("stat-total").textContent = items.length;
-    const uniqueBrands = new Set(items.map(i => i.maker_id)).size;
-    document.getElementById("stat-brands").textContent = uniqueBrands;
-    document.getElementById("stat-private").textContent = items.filter(i => i.is_private).length;
+      const mainEl   = document.getElementById("content");
+      const loadMsg  = document.getElementById("loading-msg");
 
-    // ── GROUP BY BRAND ──
-    const grouped = {};
-    items.forEach(item => {
-      const brand = item.brands;
-      const key = brand ? brand.id : "unknown";
-      if (!grouped[key]) grouped[key] = { brand, items: [] };
-      grouped[key].items.push(item);
-    });
+      if (error) {
+        loadMsg.innerHTML = `<div class="icon">✕</div>Error loading items:<br><small style="color:#e07070">${error.message}</small>`;
+        return;
+      }
 
-    // ── RENDER ──
-    const mainEl = document.getElementById("content");
-    mainEl.innerHTML = "";
+      if (!items || items.length === 0) {
+        loadMsg.innerHTML = `
+          <div class="icon">◻</div>
+          No items yet.<br>
+          <a href="index.html" style="color:var(--accent);text-decoration:none;margin-top:8px;display:inline-block;">Add your first item →</a>`;
+        return;
+      }
 
-    Object.values(grouped).forEach((group, groupIdx) => {
-      const { brand, items: groupItems } = group;
+      // ── STATS ──
+      document.getElementById("stats-row").style.display = "flex";
+      document.getElementById("stat-total").textContent   = items.length;
+      document.getElementById("stat-brands").textContent  = new Set(items.map(i => i.maker_id)).size;
+      document.getElementById("stat-private").textContent = items.filter(i => i.is_private).length;
 
-      const companyName = brand?.company || "Unknown Brand";
-      const makerName   = [brand?.first_name, brand?.last_name].filter(Boolean).join(" ");
+      // ── GROUP BY BRAND ──
+      const grouped = {};
+      items.forEach(item => {
+        const key = item.maker_id ?? "unknown";
+        if (!grouped[key]) grouped[key] = { brand: item.brands, items: [] };
+        grouped[key].items.push(item);
+      });
 
-      const groupEl = document.createElement("div");
-      groupEl.className = "brand-group";
-      groupEl.style.animationDelay = `${groupIdx * 0.07}s`;
+      // ── RENDER ──
+      mainEl.innerHTML = "";
 
-      groupEl.innerHTML = `
-        <div class="brand-header">
-          <div class="brand-name">${companyName}</div>
-          ${makerName ? `<div class="brand-maker">by ${makerName}</div>` : ""}
-          <div class="brand-count">${groupItems.length} item${groupItems.length !== 1 ? "s" : ""}</div>
-        </div>
-        <div class="items-grid" id="grid-${group.brand?.id || 'unknown'}"></div>
-      `;
+      Object.values(grouped).forEach((group, groupIdx) => {
+        const { brand, items: groupItems } = group;
+        const companyName = brand?.company || "Unknown Brand";
+        const makerName   = [brand?.first_name, brand?.last_name].filter(Boolean).join(" ").trim();
 
-      mainEl.appendChild(groupEl);
+        const groupEl = document.createElement("div");
+        groupEl.className = "brand-group";
+        groupEl.style.animationDelay = `${groupIdx * 0.07}s`;
 
-      const grid = groupEl.querySelector(".items-grid");
-
-      groupItems.forEach((item, idx) => {
-        const card = document.createElement("div");
-        card.className = `item-card${item.is_private ? " private" : ""}`;
-        card.style.animationDelay = `${(groupIdx * 0.07) + (idx * 0.04)}s`;
-        card.style.animation = "fadeUp 0.4s ease both";
-
-        const imageUrl = item.image_url1 || item.image_url2 || item.image_url3;
-        const imageHtml = imageUrl
-          ? `<img class="card-image" src="${imageUrl}" alt="${companyName} item" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="card-image-placeholder" style="display:none">◻</div>`
-          : `<div class="card-image-placeholder">◻</div>`;
-
-        const titleParts = [
-          item.categories?.name,
-          item.variant && item.variant !== "none" ? item.variant : null
-        ].filter(Boolean);
-        const cardTitle = titleParts.length ? titleParts.join(" — ") : "Item";
-
-        const metaTags = [
-          item.materials?.name ? `<span class="meta-tag">${item.materials.name}</span>` : "",
-          item.size           ? `<span class="meta-tag">${item.size}"</span>` : "",
-          item.born_on_date   ? `<span class="meta-tag">${item.born_on_date}</span>` : "",
-        ].filter(Boolean).join("");
-
-        card.innerHTML = `
-          ${imageHtml}
-          <div class="card-body">
-            <div class="card-category">${item.categories?.name || ""}</div>
-            <div class="card-title">${cardTitle}</div>
-            <div class="card-meta">${metaTags}</div>
+        groupEl.innerHTML = `
+          <div class="brand-header">
+            <div class="brand-name">${companyName}</div>
+            ${makerName ? `<div class="brand-maker">by ${makerName}</div>` : ""}
+            <div class="brand-count">${groupItems.length} item${groupItems.length !== 1 ? "s" : ""}</div>
           </div>
-          <div class="card-footer">
-            ${item.is_private
-              ? `<span class="private-badge">🔒 Private</span>`
-              : `<span class="public-badge">Public</span>`}
-            ${item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : ""}
-          </div>
+          <div class="items-grid" id="grid-${groupIdx}"></div>
         `;
 
-        grid.appendChild(card);
+        mainEl.appendChild(groupEl);
+        const grid = groupEl.querySelector(`#grid-${groupIdx}`);
+
+        groupItems.forEach((item, idx) => {
+          const card = document.createElement("div");
+          card.className = `item-card${item.is_private ? " private" : ""}`;
+          card.style.animation = `fadeUp 0.4s ease ${(groupIdx * 0.07) + (idx * 0.04)}s both`;
+
+          const imageUrl  = item.image_url1 || item.image_url2 || item.image_url3;
+          const imageHtml = imageUrl
+            ? `<img class="card-image" src="${imageUrl}" alt="" loading="lazy"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+               <div class="card-image-placeholder" style="display:none">◻</div>`
+            : `<div class="card-image-placeholder">◻</div>`;
+
+          const titleParts = [
+            item.categories?.name,
+            item.variant && item.variant !== "none" ? item.variant : null
+          ].filter(Boolean);
+
+          const metaTags = [
+            item.materials?.name ? `<span class="meta-tag">${item.materials.name}</span>` : "",
+            item.size            ? `<span class="meta-tag">${item.size}"</span>` : "",
+            item.born_on_date    ? `<span class="meta-tag">${item.born_on_date}</span>` : "",
+          ].filter(Boolean).join("");
+
+          card.innerHTML = `
+            ${imageHtml}
+            <div class="card-body">
+              <div class="card-category">${item.categories?.name || ""}</div>
+              <div class="card-title">${titleParts.join(" — ") || "Item"}</div>
+              <div class="card-meta">${metaTags}</div>
+            </div>
+            <div class="card-footer">
+              ${item.is_private
+                ? `<span class="private-badge">🔒 Private</span>`
+                : `<span class="public-badge">Public</span>`}
+              ${item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : ""}
+            </div>
+          `;
+
+          grid.appendChild(card);
+        });
       });
-    });
+
+    })(); // end async IIFE
   </script>
 
 </body>
