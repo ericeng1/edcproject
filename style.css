@@ -33,6 +33,19 @@ body {
   color: #555;
 }
 
+.my-collection-link {
+  font-size: 13px;
+  color: #2d6cdf;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.my-collection-link:hover {
+  color: #1b4bb8;
+  text-decoration: underline;
+}
+
 .signout-btn {
   background: none;
   border: 1px solid #d1d5db;
