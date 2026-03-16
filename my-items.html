@@ -450,6 +450,7 @@
           const card = document.createElement("div");
           card.className = `item-card${item.is_private ? " private" : ""}`;
           card.style.animation = `fadeUp 0.4s ease ${(groupIdx * 0.07) + (idx * 0.04)}s both`;
+          card.style.cursor = "pointer";
 
           const imageUrl  = item.image_url1 || item.image_url2 || item.image_url3;
           const imageHtml = imageUrl
@@ -484,7 +485,12 @@
             </div>
           `;
 
-          grid.appendChild(card);
+          // Wrap card in a link to the item detail page
+          const link = document.createElement("a");
+          link.href = `item.html?id=${item.id}`;
+          link.style.cssText = "text-decoration:none;color:inherit;display:block;";
+          link.appendChild(card);
+          grid.appendChild(link);
         });
       });
 

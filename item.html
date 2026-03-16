@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Item — Showoffy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0e0e0f;
+      --surface:  #161618;
+      --surface2: #1e1e21;
+      --border:   #2b2b2f;
+      --text:     #ede9e2;
+      --muted:    #6b6b72;
+      --accent:   #c8964a;
+      --accent2:  #8dbbd1;
+      --danger:   #b85450;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 40px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 24px; }
+
+    .brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .back-link {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--text); }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .topbar-email { font-size: 12px; color: var(--muted); }
+
+    .btn-small {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-small:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── STATE PAGES ── */
+    .state-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 15px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .state-page .big { font-size: 48px; line-height: 1; }
+
+    /* ── MAIN LAYOUT ── */
+    .item-page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 56px 40px 80px;
+      display: none; /* shown after load */
+      animation: fadeIn 0.5s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Top section: gallery left, meta right */
+    .item-top {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 56px;
+      align-items: start;
+      margin-bottom: 56px;
+    }
+
+    /* ── GALLERY ── */
+    .gallery { display: flex; flex-direction: column; gap: 12px; }
+
+    .gallery-main {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: zoom-in;
+      aspect-ratio: 4/3;
+    }
+
+    .gallery-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .gallery-main:hover img { transform: scale(1.03); }
+
+    .gallery-main .no-image {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 48px;
+    }
+
+    .gallery-thumbs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .thumb {
+      flex: 1;
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .thumb.active { border-color: var(--accent); }
+    .thumb:hover  { border-color: #555; }
+
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* ── META PANEL ── */
+    .meta-panel { display: flex; flex-direction: column; gap: 0; }
+
+    .meta-eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 10px;
+    }
+
+    .meta-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4vw, 52px);
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .meta-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+
+    .privacy-badge.private {
+      background: rgba(184,84,80,0.12);
+      border: 1px solid rgba(184,84,80,0.3);
+      color: var(--danger);
+    }
+
+    .privacy-badge.public {
+      background: rgba(141,187,209,0.08);
+      border: 1px solid rgba(141,187,209,0.2);
+      color: var(--accent2);
+    }
+
+    /* Data grid */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .data-cell {
+      background: var(--surface);
+      padding: 14px 18px;
+    }
+
+    .data-cell.full { grid-column: 1 / -1; }
+
+    .data-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .data-value {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text);
+    }
+
+    .data-value.price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* Comments */
+    .comments-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+
+    .comments-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .comments-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #aaa;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      animation: lbIn 0.2s ease;
+    }
+
+    @keyframes lbIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      font-size: 28px;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.15s;
+      background: none;
+      border: none;
+    }
+
+    .lightbox-close:hover { color: var(--text); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .topbar { padding: 12px 20px; }
+      .item-page { padding: 32px 20px 60px; }
+      .item-top {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .topbar-email { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="my-items.html" class="brand">Showoffy</a>
+      <a href="my-items.html" class="back-link">← My Collection</a>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-email" id="user-email"></span>
+      <a href="index.html" class="btn-small">＋ Add Item</a>
+      <button class="btn-small" id="signout-btn">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- LOADING -->
+  <div class="state-page" id="state-loading">
+    <div class="big">⬡</div>
+    Loading item…
+  </div>
+
+  <!-- ERROR -->
+  <div class="state-page" id="state-error" style="display:none;">
+    <div class="big">✕</div>
+    <span id="error-msg">Item not found.</span>
+    <a href="my-items.html" style="color:var(--accent);text-decoration:none;">← Back to collection</a>
+  </div>
+
+  <!-- ITEM PAGE -->
+  <div class="item-page" id="item-page">
+
+    <div class="item-top">
+
+      <!-- GALLERY -->
+      <div class="gallery">
+        <div class="gallery-main" id="gallery-main">
+          <div class="no-image">◻</div>
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+      </div>
+
+      <!-- META -->
+      <div class="meta-panel">
+        <div class="meta-eyebrow" id="meta-category"></div>
+        <div class="meta-title"   id="meta-brand"></div>
+        <div class="meta-subtitle" id="meta-variant"></div>
+        <div class="privacy-badge" id="privacy-badge"></div>
+
+        <div class="data-grid" id="data-grid"></div>
+
+        <div class="comments-block" id="comments-block" style="display:none;">
+          <div class="comments-label">Notes</div>
+          <div class="comments-text" id="comments-text"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt="" />
+  </div>
+
+  <script type="module">
+    import { supabase } from "./supabaseClient.js";
+
+    (async () => {
+
+      // ── AUTH ──
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { window.location.href = "login.html"; return; }
+      const user = session.user;
+      document.getElementById("user-email").textContent = user.email;
+      document.getElementById("signout-btn").addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "login.html";
+      });
+
+      // ── GET ID FROM URL ──
+      const params = new URLSearchParams(window.location.search);
+      const itemId = params.get("id");
+
+      const showError = (msg) => {
+        document.getElementById("state-loading").style.display = "none";
+        document.getElementById("state-error").style.display  = "flex";
+        document.getElementById("error-msg").textContent = msg;
+      };
+
+      if (!itemId) { showError("No item ID provided."); return; }
+
+      // ── FETCH ──
+      const { data: item, error } = await supabase
+        .from("items")
+        .select(`
+          id, variant, size, msrp, born_on_date,
+          image_url1, image_url2, image_url3,
+          is_private, comments, extra,
+          brands   ( company, first_name, last_name ),
+          categories ( name ),
+          materials  ( name )
+        `)
+        .eq("id", itemId)
+        .single();
+
+      if (error || !item) {
+        showError(error?.message || "Item not found or you don't have access.");
+        return;
+      }
+
+      // ── POPULATE ──
+      document.title = `${item.brands?.company || "Item"} — Showoffy`;
+      document.getElementById("state-loading").style.display = "none";
+      document.getElementById("item-page").style.display     = "block";
+
+      // Category eyebrow
+      document.getElementById("meta-category").textContent = item.categories?.name || "";
+
+      // Brand title
+      const brandName = item.brands?.company || "Unknown Brand";
+      document.getElementById("meta-brand").textContent = brandName;
+
+      // Variant subtitle
+      const variantText = [
+        item.variant && item.variant !== "none" ? item.variant : null,
+        item.materials?.name || null
+      ].filter(Boolean).join(" · ");
+      const subtitleEl = document.getElementById("meta-variant");
+      if (variantText) { subtitleEl.textContent = variantText; }
+      else             { subtitleEl.style.display = "none"; }
+
+      // Privacy badge
+      const badgeEl = document.getElementById("privacy-badge");
+      if (item.is_private) {
+        badgeEl.className = "privacy-badge private";
+        badgeEl.innerHTML = "🔒 Private";
+      } else {
+        badgeEl.className = "privacy-badge public";
+        badgeEl.innerHTML = "◎ Public";
+      }
+
+      // Data grid
+      const gridEl = document.getElementById("data-grid");
+      const addCell = (label, value, full = false) => {
+        if (!value && value !== 0) return;
+        const cell = document.createElement("div");
+        cell.className = `data-cell${full ? " full" : ""}`;
+        cell.innerHTML = `<div class="data-label">${label}</div>
+                          <div class="data-value${label === "MSRP" ? " price" : ""}">${value}</div>`;
+        gridEl.appendChild(cell);
+      };
+
+      addCell("Brand",    item.brands?.company);
+      addCell("Category", item.categories?.name);
+      addCell("Material", item.materials?.name);
+      addCell("Size",     item.size ? `${item.size}"` : null);
+      addCell("MSRP",     item.msrp ? `$${parseFloat(item.msrp).toFixed(2)}` : null);
+      addCell("Born On",  item.born_on_date);
+      addCell("Variant",  item.variant && item.variant !== "none" ? item.variant : null);
+      addCell("Extra",    item.extra || null);
+
+      // Comments
+      if (item.comments) {
+        document.getElementById("comments-block").style.display = "block";
+        document.getElementById("comments-text").textContent    = item.comments;
+      }
+
+      // ── GALLERY ──
+      const images = [item.image_url1, item.image_url2, item.image_url3].filter(Boolean);
+      const mainEl  = document.getElementById("gallery-main");
+      const thumbsEl = document.getElementById("gallery-thumbs");
+
+      if (images.length === 0) {
+        // keep placeholder
+      } else {
+        // Set main image
+        mainEl.innerHTML = `<img src="${images[0]}" alt="${brandName}" id="main-img" />`;
+        mainEl.addEventListener("click", () => openLightbox(images[0]));
+
+        // Thumbnails (only if more than one image)
+        if (images.length > 1) {
+          images.forEach((url, i) => {
+            const thumb = document.createElement("div");
+            thumb.className = `thumb${i === 0 ? " active" : ""}`;
+            thumb.innerHTML = `<img src="${url}" alt="" loading="lazy" />`;
+            thumb.addEventListener("click", () => {
+              document.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
+              thumb.classList.add("active");
+              const mainImg = document.getElementById("main-img");
+              mainImg.src = url;
+              mainEl.onclick = () => openLightbox(url);
+            });
+            thumbsEl.appendChild(thumb);
+          });
+        }
+      }
+
+    })();
+
+    // ── LIGHTBOX ──
+    window.openLightbox = (src) => {
+      document.getElementById("lightbox-img").src = src;
+      document.getElementById("lightbox").classList.add("open");
+      document.body.style.overflow = "hidden";
+    };
+
+    window.closeLightbox = () => {
+      document.getElementById("lightbox").classList.remove("open");
+      document.body.style.overflow = "";
+    };
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") window.closeLightbox();
+    });
+  </script>
+
+</body>
+</html>
