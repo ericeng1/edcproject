@@ -8,6 +8,12 @@
 </head>
 <body>
 
+  <!-- User bar: shown once logged in -->
+  <div id="user-bar" class="user-bar" style="display:none;">
+    <span id="user-email" class="user-email"></span>
+    <button id="signout-btn" class="signout-btn">Sign Out</button>
+  </div>
+
   <div class="form-container">
     <h1>Add New Item</h1>
 
@@ -83,6 +89,16 @@
         <label for="image3">Image 3</label>
         <input type="file" id="image3" accept="image/*" />
         <img id="preview3" class="image-preview" alt="Preview 3" />
+      </div>
+
+      <!-- Privacy Toggle -->
+      <div class="form-group privacy-group">
+        <label class="privacy-label">
+          <input type="checkbox" id="is_private" />
+          <span class="privacy-text">
+            <strong>Private entry</strong> — only visible to you
+          </span>
+        </label>
       </div>
 
       <button type="submit" class="submit-btn">Save Item</button>
