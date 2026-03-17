@@ -244,6 +244,32 @@
 
     .item-card.private { border-left: 3px solid var(--danger); }
 
+    /* ── Owner menu button on cards ── */
+    .card-menu-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      background: rgba(0,0,0,0.55);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+      text-decoration: none;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+
+    .card-menu-btn:hover { background: rgba(200,150,74,0.75); }
+    .item-card.owner .card-menu-btn { display: flex; }
+
     .card-image {
       width: 100%;
       aspect-ratio: 4/3;
@@ -470,6 +496,7 @@
           card.className = `item-card${item.is_private ? " private" : ""}`;
           card.style.animation = `fadeUp 0.4s ease ${(groupIdx * 0.07) + (idx * 0.04)}s both`;
           card.style.cursor = "pointer";
+          if (item.user_id === user.id) card.classList.add("owner");
 
           const imageUrl  = item.image_url1 || item.image_url2 || item.image_url3;
           const imageHtml = imageUrl
@@ -503,6 +530,17 @@
               ${item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : ""}
             </div>
           `;
+
+          // Add owner edit button
+          if (item.user_id === user.id) {
+            const menuBtn = document.createElement("a");
+            menuBtn.className = "card-menu-btn";
+            menuBtn.href = `edit-item.html?id=${item.id}&from=collection`;
+            menuBtn.title = "Edit item";
+            menuBtn.innerHTML = "⋯";
+            menuBtn.addEventListener("click", e => e.stopPropagation());
+            card.appendChild(menuBtn);
+          }
 
           // Wrap card in a link to the item detail page
           const link = document.createElement("a");
