@@ -1,14 +1,10 @@
 import { supabase } from "./supabaseClient.js";
 
 // -------- AUTH GATE --------
-// Redirect to login if not signed in
 const { data: { session } } = await supabase.auth.getSession();
-if (!session) {
-  window.location.href = "login.html";
-}
+if (!session) { window.location.href = "login.html"; }
 const currentUser = session.user;
 
-// Show logged-in user email + sign out button
 const userBar   = document.getElementById("user-bar");
 const userEmail = document.getElementById("user-email");
 if (userBar)   userBar.style.display = "flex";
@@ -65,28 +61,73 @@ async function addNewEntry(table, selectElement, displayFunc) {
 addCategoryBtn.addEventListener("click", () => addNewEntry("categories", categorySelect, row => row.name));
 addMaterialBtn.addEventListener("click", () => addNewEntry("materials",  materialSelect, row => row.name));
 
-// -------- IMAGE PREVIEWS --------
-["image1","image2","image3","image4","image5","image6","image7","image8","image9","image10"].forEach((id, i) => {
-  document.getElementById(id).addEventListener("change", (e) => {
-    const file    = e.target.files[0];
-    const preview = document.getElementById(`preview${i + 1}`);
-    if (file) {
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = "block";
-    } else {
-      preview.src = "";
-      preview.style.display = "none";
-    }
-  });
+// -------- MULTI-IMAGE PREVIEW --------
+// Tracks the File objects the user has selected, capped at 10
+let selectedFiles = [];
+const MAX_PHOTOS  = 10;
+
+const imageInput  = document.getElementById("images");
+const previewStrip = document.getElementById("preview-strip");
+
+imageInput.addEventListener("change", () => {
+  const incoming = Array.from(imageInput.files);
+
+  // Merge with already-selected files, dedupe by name+size, cap at MAX_PHOTOS
+  const merged = [...selectedFiles];
+  for (const file of incoming) {
+    if (merged.length >= MAX_PHOTOS) break;
+    const isDupe = merged.some(f => f.name === file.name && f.size === file.size);
+    if (!isDupe) merged.push(file);
+  }
+  selectedFiles = merged;
+
+  // Reset input so the same file can be re-selected if removed
+  imageInput.value = "";
+
+  renderPreviews();
 });
 
+function renderPreviews() {
+  previewStrip.innerHTML = "";
+
+  selectedFiles.forEach((file, idx) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "preview-strip-item";
+
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "remove-btn";
+    removeBtn.textContent = "✕";
+    removeBtn.title = "Remove photo";
+    removeBtn.addEventListener("click", () => {
+      selectedFiles.splice(idx, 1);
+      renderPreviews();
+    });
+
+    wrapper.appendChild(img);
+    wrapper.appendChild(removeBtn);
+    previewStrip.appendChild(wrapper);
+  });
+
+  // Show count if any files selected
+  if (selectedFiles.length > 0) {
+    const count = document.createElement("p");
+    count.className = "preview-count";
+    count.textContent = `${selectedFiles.length} / ${MAX_PHOTOS} photo${selectedFiles.length !== 1 ? "s" : ""} selected`;
+    previewStrip.appendChild(count);
+  }
+}
+
 // -------- UPLOAD IMAGE TO SUPABASE STORAGE --------
-// Stored under <user_id>/<filename> so folder-scoped storage policies work
 const BUCKET = "item-images";
 
 async function uploadImage(file) {
   if (!file) return null;
-  const filename = `${currentUser.id}/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+  const filename = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name.replace(/\s+/g, "_")}`;
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(filename, file, { cacheControl: "3600", upsert: false });
@@ -101,24 +142,28 @@ form.addEventListener("submit", async (e) => {
 
   const submitBtn = form.querySelector(".submit-btn");
   submitBtn.disabled = true;
-  status.textContent = "Uploading images...";
-  status.style.color = "#2d6cdf";
+
+  const filesToUpload = selectedFiles.slice(0, MAX_PHOTOS);
+
+  if (filesToUpload.length > 0) {
+    status.textContent = `Uploading ${filesToUpload.length} photo${filesToUpload.length !== 1 ? "s" : ""}…`;
+    status.style.color = "#2d6cdf";
+  } else {
+    status.textContent = "Saving item…";
+    status.style.color = "#2d6cdf";
+  }
 
   try {
-    const [url1,url2,url3,url4,url5,url6,url7,url8,url9,url10] = await Promise.all([
-      uploadImage(document.getElementById("image1").files[0]  || null),
-      uploadImage(document.getElementById("image2").files[0]  || null),
-      uploadImage(document.getElementById("image3").files[0]  || null),
-      uploadImage(document.getElementById("image4").files[0]  || null),
-      uploadImage(document.getElementById("image5").files[0]  || null),
-      uploadImage(document.getElementById("image6").files[0]  || null),
-      uploadImage(document.getElementById("image7").files[0]  || null),
-      uploadImage(document.getElementById("image8").files[0]  || null),
-      uploadImage(document.getElementById("image9").files[0]  || null),
-      uploadImage(document.getElementById("image10").files[0] || null),
-    ]);
+    // Upload all selected files in parallel
+    const urls = await Promise.all(filesToUpload.map(f => uploadImage(f)));
 
-    status.textContent = "Saving item...";
+    status.textContent = "Saving item…";
+
+    // Map urls into image_url1 … image_url10
+    const imageFields = {};
+    for (let i = 0; i < MAX_PHOTOS; i++) {
+      imageFields[`image_url${i + 1}`] = urls[i] ?? null;
+    }
 
     const item = {
       user_id:      currentUser.id,
@@ -132,16 +177,7 @@ form.addEventListener("submit", async (e) => {
       variant:      document.getElementById("variant").value,
       extra:        document.getElementById("extra").value,
       comments:     document.getElementById("comments").value,
-      image_url1:   url1,
-      image_url2:   url2,
-      image_url3:   url3,
-      image_url4:   url4,
-      image_url5:   url5,
-      image_url6:   url6,
-      image_url7:   url7,
-      image_url8:   url8,
-      image_url9:   url9,
-      image_url10:  url10,
+      ...imageFields,
     };
 
     const { error } = await supabase.from("items").insert([item]);
@@ -153,10 +189,8 @@ form.addEventListener("submit", async (e) => {
       status.textContent = "Item saved!";
       status.style.color = "green";
       form.reset();
-      ["preview1","preview2","preview3","preview4","preview5","preview6","preview7","preview8","preview9","preview10"].forEach(id => {
-        const el = document.getElementById(id);
-        el.src = ""; el.style.display = "none";
-      });
+      selectedFiles = [];
+      renderPreviews();
     }
   } catch (err) {
     status.textContent = err.message;

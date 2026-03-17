@@ -248,3 +248,57 @@ textarea {
 .dropdown-wrapper select {
   flex: 1;
 }
+
+/* ---- Multi-image preview strip ---- */
+.preview-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.preview-strip-item {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  flex-shrink: 0;
+}
+
+.preview-strip-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.preview-strip-item .remove-btn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.preview-strip-item .remove-btn:hover { background: rgba(200,0,0,0.75); }
+
+.preview-count {
+  font-size: 12px;
+  color: #888;
+  margin-top: 6px;
+}
