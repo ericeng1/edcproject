@@ -368,7 +368,7 @@
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { showStatus(error.message, "error"); setLoading(false); return; }
-      window.location.href = "index.html";
+      window.location.href = "dashboard.html";
     }
 
     setLoading(false);
@@ -377,7 +377,7 @@
   window.handleOAuth = async function(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + "/index.html" }
+      options: { redirectTo: window.location.origin + "/dashboard.html" }
     });
     if (error) showStatus(error.message, "error");
   };
@@ -409,7 +409,7 @@
 
   // If already logged in, skip straight to app
   supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = "index.html";
+    if (session) window.location.href = "dashboard.html";
   });
 </script>
 
