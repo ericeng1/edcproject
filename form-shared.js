@@ -442,7 +442,13 @@ export async function addNewLookup(table) {
     .single();
 
   if (error) {
-    showToast(`Failed to add ${label.toLowerCase()}: ${error.message}`, "error");
+    // Unique constraint violation — entry already exists
+    if (error.code === "23505") {
+      showToast(`"${name}" already exists — select it from the list`, "error");
+      haptic("error");
+    } else {
+      showToast(`Failed to add ${label.toLowerCase()}: ${error.message}`, "error");
+    }
     return null;
   }
 
