@@ -456,3 +456,75 @@ export async function addNewLookup(table) {
   haptic("success");
   return { id: data.id, name: data.name };
 }
+
+// ── DYNAMIC CHIP LOADER ───────────────────────────────────────────────────────
+/**
+ * Fetches all rows from `table` and renders them as selectable chips
+ * inside `containerId`, with a "+ Add" chip at the end.
+ *
+ * @returns the selected id (updated via closure), and a setter for draft restore.
+ */
+export async function loadChips({ table, containerId, addChipId, onSelect }) {
+  const container = document.getElementById(containerId);
+
+  // Show a subtle loading state
+  container.innerHTML = `<span style="font-size:13px;color:var(--muted,#737278);letter-spacing:0.04em;">Loading…</span>`;
+
+  const { data, error } = await supabase
+    .from(table)
+    .select("id, name")
+    .order("name");
+
+  if (error) {
+    container.innerHTML = `<span style="font-size:13px;color:#c07070;">Failed to load — reload page</span>`;
+    return { getSelected: () => null, setSelected: () => {} };
+  }
+
+  container.innerHTML = "";
+
+  // Render a chip and wire its click handler
+  function renderChip(id, name) {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.dataset.id = String(id);
+    chip.textContent = name;
+    chip.addEventListener("click", () => {
+      container.querySelectorAll(".chip:not(.chip-add)").forEach(c => c.classList.remove("selected"));
+      chip.classList.add("selected");
+      if (typeof haptic === "function") haptic("light");
+      onSelect(id);
+    });
+    return chip;
+  }
+
+  data.forEach(row => container.appendChild(renderChip(row.id, row.name)));
+
+  // "+ Add" chip at the end
+  const addChip = document.createElement("div");
+  addChip.className = "chip chip-add";
+  addChip.id = addChipId;
+  addChip.textContent = "＋ Add";
+  container.appendChild(addChip);
+
+  // Return helpers for draft restore and external new-chip injection
+  return {
+    getSelected() {
+      const sel = container.querySelector(".chip.selected:not(.chip-add)");
+      return sel ? parseInt(sel.dataset.id) : null;
+    },
+    setSelected(id) {
+      container.querySelectorAll(".chip:not(.chip-add)").forEach(c => {
+        c.classList.toggle("selected", String(c.dataset.id) === String(id));
+      });
+    },
+    addAndSelect(id, name) {
+      // Insert new chip before the add chip
+      const newChip = renderChip(id, name);
+      container.insertBefore(newChip, addChip);
+      container.querySelectorAll(".chip:not(.chip-add)").forEach(c => c.classList.remove("selected"));
+      newChip.classList.add("selected");
+      onSelect(id);
+    },
+    getAddChip() { return addChip; },
+  };
+}
