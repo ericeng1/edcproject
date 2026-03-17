@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
+  <title>Sign In</title>  <style>
     :root {
+    /* ── GLOBAL FONT SYSTEM ──
+       Primary:   Bebas Neue      → headlines, logo, labels
+       Secondary: Lato            → body, paragraphs, UI
+       Accent:    Cormorant Garamond → prices, pull quotes, decorative
+    */
+    --font-primary: 'Bebas Neue', sans-serif;
+    --font-body:    'Lato', sans-serif;
+    --font-accent:  'Cormorant Garamond', serif;
       --bg: #0f0f0f;
       --surface: #181818;
       --border: #2a2a2a;
@@ -25,7 +33,7 @@
       min-height: 100vh;
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      font-family: var(--font-body), sans-serif;
       font-weight: 300;
       display: grid;
       place-items: center;
@@ -51,7 +59,7 @@
     }
 
     .wordmark {
-      font-family: 'DM Serif Display', serif;
+      font-family: var(--font-accent), serif;
       font-size: 13px;
       letter-spacing: 0.25em;
       text-transform: uppercase;
@@ -60,7 +68,7 @@
     }
 
     h1 {
-      font-family: 'DM Serif Display', serif;
+      font-family: var(--font-accent), serif;
       font-size: 28px;
       font-weight: 400;
       line-height: 1.2;
@@ -88,7 +96,7 @@
     .tab {
       flex: 1;
       padding: 8px;
-      font-family: 'DM Sans', sans-serif;
+      font-family: var(--font-body), sans-serif;
       font-size: 13px;
       font-weight: 500;
       background: none;
@@ -125,7 +133,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      font-family: var(--font-body), sans-serif;
       font-size: 15px;
       font-weight: 300;
       transition: border-color 0.2s, box-shadow 0.2s;
@@ -147,7 +155,7 @@
       color: #0f0f0f;
       border: none;
       border-radius: var(--radius);
-      font-family: 'DM Sans', sans-serif;
+      font-family: var(--font-body), sans-serif;
       font-size: 15px;
       font-weight: 500;
       cursor: pointer;
@@ -188,7 +196,7 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
+      font-family: var(--font-body), sans-serif;
       font-size: 14px;
       font-weight: 400;
       cursor: pointer;

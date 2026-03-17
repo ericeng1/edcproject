@@ -66,7 +66,7 @@ addCategoryBtn.addEventListener("click", () => addNewEntry("categories", categor
 addMaterialBtn.addEventListener("click", () => addNewEntry("materials",  materialSelect, row => row.name));
 
 // -------- IMAGE PREVIEWS --------
-["image1", "image2", "image3"].forEach((id, i) => {
+["image1","image2","image3","image4","image5","image6","image7","image8","image9","image10"].forEach((id, i) => {
   document.getElementById(id).addEventListener("change", (e) => {
     const file    = e.target.files[0];
     const preview = document.getElementById(`preview${i + 1}`);
@@ -105,10 +105,17 @@ form.addEventListener("submit", async (e) => {
   status.style.color = "#2d6cdf";
 
   try {
-    const [url1, url2, url3] = await Promise.all([
-      uploadImage(document.getElementById("image1").files[0] || null),
-      uploadImage(document.getElementById("image2").files[0] || null),
-      uploadImage(document.getElementById("image3").files[0] || null),
+    const [url1,url2,url3,url4,url5,url6,url7,url8,url9,url10] = await Promise.all([
+      uploadImage(document.getElementById("image1").files[0]  || null),
+      uploadImage(document.getElementById("image2").files[0]  || null),
+      uploadImage(document.getElementById("image3").files[0]  || null),
+      uploadImage(document.getElementById("image4").files[0]  || null),
+      uploadImage(document.getElementById("image5").files[0]  || null),
+      uploadImage(document.getElementById("image6").files[0]  || null),
+      uploadImage(document.getElementById("image7").files[0]  || null),
+      uploadImage(document.getElementById("image8").files[0]  || null),
+      uploadImage(document.getElementById("image9").files[0]  || null),
+      uploadImage(document.getElementById("image10").files[0] || null),
     ]);
 
     status.textContent = "Saving item...";
@@ -128,6 +135,13 @@ form.addEventListener("submit", async (e) => {
       image_url1:   url1,
       image_url2:   url2,
       image_url3:   url3,
+      image_url4:   url4,
+      image_url5:   url5,
+      image_url6:   url6,
+      image_url7:   url7,
+      image_url8:   url8,
+      image_url9:   url9,
+      image_url10:  url10,
     };
 
     const { error } = await supabase.from("items").insert([item]);
@@ -139,7 +153,7 @@ form.addEventListener("submit", async (e) => {
       status.textContent = "Item saved!";
       status.style.color = "green";
       form.reset();
-      ["preview1", "preview2", "preview3"].forEach(id => {
+      ["preview1","preview2","preview3","preview4","preview5","preview6","preview7","preview8","preview9","preview10"].forEach(id => {
         const el = document.getElementById(id);
         el.src = ""; el.style.display = "none";
       });

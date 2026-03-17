@@ -5,9 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Item — Showoffy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
   <style>
     :root {
+      /* ── GLOBAL FONT SYSTEM ──
+         Primary:   Bebas Neue           → headlines, logo, labels
+         Secondary: Lato                 → body, paragraphs, UI
+         Accent:    Cormorant Garamond   → prices, pull quotes, decorative
+      */
+      --font-primary: 'Bebas Neue', sans-serif;
+      --font-body:    'Lato', sans-serif;
+      --font-accent:  'Cormorant Garamond', serif;
+
       --bg:       #0e0e0f;
       --surface:  #161618;
       --surface2: #1e1e21;
@@ -17,12 +27,13 @@
       --accent:   #c8964a;
       --accent2:  #8dbbd1;
       --danger:   #b85450;
+      --success:  #5a9e6f;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-body);
       font-weight: 300;
       background: var(--bg);
       color: var(--text);
@@ -45,36 +56,35 @@
     .topbar-left { display: flex; align-items: center; gap: 24px; }
 
     .brand {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
+      font-family: var(--font-primary);
+      font-size: 22px;
+      letter-spacing: 0.12em;
       color: var(--accent);
       text-decoration: none;
     }
 
     .back-link {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--muted);
       text-decoration: none;
       display: flex;
       align-items: center;
       gap: 5px;
+      letter-spacing: 0.04em;
       transition: color 0.2s;
     }
 
     .back-link:hover { color: var(--text); }
 
     .topbar-right { display: flex; align-items: center; gap: 16px; }
-
-    .topbar-email { font-size: 12px; color: var(--muted); }
+    .topbar-email  { font-size: 12px; color: var(--muted); }
 
     .btn-small {
       background: none;
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 5px 12px;
-      font-family: 'Outfit', sans-serif;
+      font-family: var(--font-body);
       font-size: 12px;
       color: var(--muted);
       cursor: pointer;
@@ -98,15 +108,15 @@
       padding: 40px;
     }
 
-    .state-page .big { font-size: 48px; line-height: 1; }
+    .state-page .big { font-size: 48px; }
 
     /* ── MAIN LAYOUT ── */
     .item-page {
       max-width: 1080px;
       margin: 0 auto;
       padding: 56px 40px 80px;
-      display: none; /* shown after load */
-      animation: fadeIn 0.5s ease both;
+      display: none;
+      animation: fadeIn 0.4s ease both;
     }
 
     @keyframes fadeIn {
@@ -114,10 +124,9 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Top section: gallery left, meta right */
     .item-top {
       display: grid;
-      grid-template-columns: 1fr 420px;
+      grid-template-columns: 1fr 400px;
       gap: 56px;
       align-items: start;
       margin-bottom: 56px;
@@ -146,9 +155,8 @@
 
     .gallery-main:hover img { transform: scale(1.03); }
 
-    .gallery-main .no-image {
-      width: 100%;
-      height: 100%;
+    .no-image {
+      width: 100%; height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -156,30 +164,86 @@
       font-size: 48px;
     }
 
+    /* Thumb strip */
     .gallery-thumbs {
-      display: flex;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 8px;
     }
 
     .thumb {
-      flex: 1;
       aspect-ratio: 1;
       background: var(--surface);
       border: 2px solid var(--border);
-      border-radius: 8px;
+      border-radius: 7px;
       overflow: hidden;
       cursor: pointer;
       transition: border-color 0.2s;
     }
 
-    .thumb.active { border-color: var(--accent); }
-    .thumb:hover  { border-color: #555; }
+    .thumb.active  { border-color: var(--accent); }
+    .thumb:hover   { border-color: #555; }
 
     .thumb img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    /* Add photo tile */
+    .thumb-add {
+      aspect-ratio: 1;
+      background: var(--surface2);
+      border: 2px dashed var(--border);
+      border-radius: 7px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .thumb-add:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,150,74,0.05); }
+    .thumb-add .plus { font-size: 20px; font-weight: 300; }
+
+    /* Hidden file input */
+    #photo-file-input { display: none; }
+
+    /* Upload status */
+    .upload-status {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .upload-status.uploading {
+      display: block;
+      background: rgba(141,187,209,0.1);
+      border: 1px solid rgba(141,187,209,0.25);
+      color: var(--accent2);
+    }
+
+    .upload-status.success {
+      display: block;
+      background: rgba(90,158,111,0.1);
+      border: 1px solid rgba(90,158,111,0.25);
+      color: var(--success);
+    }
+
+    .upload-status.error {
+      display: block;
+      background: rgba(184,84,80,0.1);
+      border: 1px solid rgba(184,84,80,0.25);
+      color: var(--danger);
     }
 
     /* ── META PANEL ── */
@@ -191,23 +255,24 @@
       text-transform: uppercase;
       color: var(--accent2);
       margin-bottom: 10px;
+      font-family: var(--font-body);
     }
 
     .meta-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: var(--font-primary);
       font-size: clamp(36px, 4vw, 52px);
-      font-weight: 600;
+      letter-spacing: 0.04em;
       line-height: 1.05;
       color: var(--text);
       margin-bottom: 6px;
     }
 
     .meta-subtitle {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
+      font-family: var(--font-accent);
+      font-size: 20px;
       font-style: italic;
       color: var(--muted);
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .privacy-badge {
@@ -219,7 +284,8 @@
       font-size: 11px;
       letter-spacing: 0.07em;
       text-transform: uppercase;
-      margin-bottom: 28px;
+      font-family: var(--font-body);
+      margin-bottom: 24px;
       width: fit-content;
     }
 
@@ -244,14 +310,10 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    .data-cell {
-      background: var(--surface);
-      padding: 14px 18px;
-    }
-
+    .data-cell { background: var(--surface); padding: 14px 18px; }
     .data-cell.full { grid-column: 1 / -1; }
 
     .data-label {
@@ -259,6 +321,7 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
+      font-family: var(--font-body);
       margin-bottom: 5px;
     }
 
@@ -266,11 +329,12 @@
       font-size: 15px;
       font-weight: 400;
       color: var(--text);
+      font-family: var(--font-body);
     }
 
     .data-value.price {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 22px;
+      font-family: var(--font-accent);
+      font-size: 24px;
       font-weight: 600;
       color: var(--accent);
     }
@@ -288,11 +352,14 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
+      font-family: var(--font-body);
       margin-bottom: 10px;
     }
 
     .comments-text {
-      font-size: 14px;
+      font-family: var(--font-accent);
+      font-size: 16px;
+      font-style: italic;
       line-height: 1.7;
       color: #aaa;
     }
@@ -302,24 +369,18 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.92);
+      background: rgba(0,0,0,0.93);
       z-index: 999;
       align-items: center;
       justify-content: center;
       cursor: zoom-out;
-      animation: lbIn 0.2s ease;
-    }
-
-    @keyframes lbIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
     }
 
     .lightbox.open { display: flex; }
 
     .lightbox img {
-      max-width: 90vw;
-      max-height: 90vh;
+      max-width: 92vw;
+      max-height: 92vh;
       object-fit: contain;
       border-radius: 6px;
       box-shadow: 0 24px 80px rgba(0,0,0,0.8);
@@ -327,34 +388,28 @@
 
     .lightbox-close {
       position: absolute;
-      top: 24px;
-      right: 28px;
+      top: 20px; right: 24px;
       font-size: 28px;
       color: var(--muted);
       cursor: pointer;
-      line-height: 1;
-      transition: color 0.15s;
       background: none;
       border: none;
+      transition: color 0.15s;
     }
 
     .lightbox-close:hover { color: var(--text); }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
+    @media (max-width: 780px) {
       .topbar { padding: 12px 20px; }
-      .item-page { padding: 32px 20px 60px; }
-      .item-top {
-        grid-template-columns: 1fr;
-        gap: 32px;
-      }
+      .item-page { padding: 28px 20px 60px; }
+      .item-top { grid-template-columns: 1fr; gap: 28px; }
       .topbar-email { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOPBAR -->
   <header class="topbar">
     <div class="topbar-left">
       <a href="my-items.html" class="brand">Showoffy</a>
@@ -367,41 +422,37 @@
     </div>
   </header>
 
-  <!-- LOADING -->
   <div class="state-page" id="state-loading">
     <div class="big">⬡</div>
     Loading item…
   </div>
 
-  <!-- ERROR -->
   <div class="state-page" id="state-error" style="display:none;">
     <div class="big">✕</div>
     <span id="error-msg">Item not found.</span>
     <a href="my-items.html" style="color:var(--accent);text-decoration:none;">← Back to collection</a>
   </div>
 
-  <!-- ITEM PAGE -->
-  <div class="item-page" id="item-page">
+  <!-- Hidden file input for photo uploads -->
+  <input type="file" id="photo-file-input" accept="image/*" multiple />
 
+  <div class="item-page" id="item-page">
     <div class="item-top">
 
-      <!-- GALLERY -->
       <div class="gallery">
         <div class="gallery-main" id="gallery-main">
           <div class="no-image">◻</div>
         </div>
         <div class="gallery-thumbs" id="gallery-thumbs"></div>
+        <div class="upload-status" id="upload-status"></div>
       </div>
 
-      <!-- META -->
       <div class="meta-panel">
-        <div class="meta-eyebrow" id="meta-category"></div>
-        <div class="meta-title"   id="meta-brand"></div>
+        <div class="meta-eyebrow"  id="meta-category"></div>
+        <div class="meta-title"    id="meta-brand"></div>
         <div class="meta-subtitle" id="meta-variant"></div>
         <div class="privacy-badge" id="privacy-badge"></div>
-
-        <div class="data-grid" id="data-grid"></div>
-
+        <div class="data-grid"     id="data-grid"></div>
         <div class="comments-block" id="comments-block" style="display:none;">
           <div class="comments-label">Notes</div>
           <div class="comments-text" id="comments-text"></div>
@@ -411,7 +462,6 @@
     </div>
   </div>
 
-  <!-- LIGHTBOX -->
   <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
     <img id="lightbox-img" src="" alt="" />
@@ -420,43 +470,59 @@
   <script type="module">
     import { supabase } from "./supabaseClient.js";
 
+    const IMG_COLS = ["image_url1","image_url2","image_url3","image_url4","image_url5",
+                      "image_url6","image_url7","image_url8","image_url9","image_url10"];
+    const BUCKET = "item-images";
+
+    let currentItemId  = null;
+    let currentUserId  = null;
+    let isOwner        = false;
+    let activeImageUrl = null;
+
+    // ── STATE HELPERS ──
+    const showError = (msg) => {
+      document.getElementById("state-loading").style.display = "none";
+      document.getElementById("state-error").style.display   = "flex";
+      document.getElementById("error-msg").textContent = msg;
+    };
+
+    const setUploadStatus = (type, msg) => {
+      const el = document.getElementById("upload-status");
+      el.className = `upload-status ${type}`;
+      el.textContent = msg;
+    };
+
     (async () => {
 
       // ── AUTH ──
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { window.location.href = "login.html"; return; }
-      const user = session.user;
-      document.getElementById("user-email").textContent = user.email;
+      currentUserId = session.user.id;
+      document.getElementById("user-email").textContent = session.user.email;
       document.getElementById("signout-btn").addEventListener("click", async () => {
         await supabase.auth.signOut();
         window.location.href = "login.html";
       });
 
-      // ── GET ID FROM URL ──
+      // ── GET ID ──
       const params = new URLSearchParams(window.location.search);
-      const itemId = params.get("id");
-
-      const showError = (msg) => {
-        document.getElementById("state-loading").style.display = "none";
-        document.getElementById("state-error").style.display  = "flex";
-        document.getElementById("error-msg").textContent = msg;
-      };
-
-      if (!itemId) { showError("No item ID provided."); return; }
+      currentItemId = params.get("id");
+      if (!currentItemId) { showError("No item ID provided."); return; }
 
       // ── FETCH ──
       const { data: item, error } = await supabase
         .from("items")
         .select(`
-          id, variant, size, msrp, born_on_date,
-          image_url1, image_url2, image_url3,
+          id, maker_id, user_id,
+          variant, size, msrp, born_on_date,
+          image_url1, image_url2, image_url3, image_url4, image_url5,
+          image_url6, image_url7, image_url8, image_url9, image_url10,
           is_private, comments, extra,
-          maker_id,
-          brands   ( id, company, first_name, last_name ),
+          brands     ( id, company, first_name, last_name ),
           categories ( name ),
           materials  ( name )
         `)
-        .eq("id", itemId)
+        .eq("id", currentItemId)
         .single();
 
       if (error || !item) {
@@ -464,25 +530,30 @@
         return;
       }
 
-      // ── POPULATE ──
+      isOwner = item.user_id === currentUserId;
+
+      // ── SHOW PAGE ──
       document.title = `${item.brands?.company || "Item"} — Showoffy`;
       document.getElementById("state-loading").style.display = "none";
       document.getElementById("item-page").style.display     = "block";
 
-      // Category eyebrow
+      // Category
       document.getElementById("meta-category").textContent = item.categories?.name || "";
 
-      // Brand title
+      // Brand (linked to maker page)
       const brandName = item.brands?.company || "Unknown Brand";
-      const makerPageUrl = item.maker_id ? `maker.html?id=${item.maker_id}` : null;
-      const brandEl = document.getElementById("meta-brand");
-      if (makerPageUrl) {
-        brandEl.innerHTML = `<a href="${makerPageUrl}" style="color:inherit;text-decoration:none;border-bottom:2px solid rgba(200,150,74,0.4);padding-bottom:2px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(200,150,74,1)'" onmouseout="this.style.borderColor='rgba(200,150,74,0.4)'">${brandName}</a>`;
+      const brandEl   = document.getElementById("meta-brand");
+      if (item.maker_id) {
+        brandEl.innerHTML = `<a href="maker.html?id=${item.maker_id}"
+          style="color:inherit;text-decoration:none;border-bottom:2px solid rgba(200,150,74,0.35);
+                 padding-bottom:2px;transition:border-color 0.2s;"
+          onmouseover="this.style.borderColor='rgba(200,150,74,1)'"
+          onmouseout="this.style.borderColor='rgba(200,150,74,0.35)'">${brandName}</a>`;
       } else {
         brandEl.textContent = brandName;
       }
 
-      // Variant subtitle
+      // Variant / material subtitle
       const variantText = [
         item.variant && item.variant !== "none" ? item.variant : null,
         item.materials?.name || null
@@ -491,18 +562,13 @@
       if (variantText) { subtitleEl.textContent = variantText; }
       else             { subtitleEl.style.display = "none"; }
 
-      // Privacy badge
+      // Privacy
       const badgeEl = document.getElementById("privacy-badge");
-      if (item.is_private) {
-        badgeEl.className = "privacy-badge private";
-        badgeEl.innerHTML = "🔒 Private";
-      } else {
-        badgeEl.className = "privacy-badge public";
-        badgeEl.innerHTML = "◎ Public";
-      }
+      badgeEl.className = `privacy-badge ${item.is_private ? "private" : "public"}`;
+      badgeEl.innerHTML  = item.is_private ? "🔒 Private" : "◎ Public";
 
       // Data grid
-      const gridEl = document.getElementById("data-grid");
+      const gridEl  = document.getElementById("data-grid");
       const addCell = (label, value, full = false) => {
         if (!value && value !== 0) return;
         const cell = document.createElement("div");
@@ -527,37 +593,128 @@
         document.getElementById("comments-text").textContent    = item.comments;
       }
 
-      // ── GALLERY ──
-      const images = [item.image_url1, item.image_url2, item.image_url3].filter(Boolean);
-      const mainEl  = document.getElementById("gallery-main");
+      // ── BUILD GALLERY ──
+      buildGallery(item);
+
+    })(); // end init IIFE
+
+    // ── GALLERY BUILDER ──
+    function buildGallery(item) {
+      const images   = IMG_COLS.map(c => item[c]).filter(Boolean);
+      const mainEl   = document.getElementById("gallery-main");
       const thumbsEl = document.getElementById("gallery-thumbs");
+      thumbsEl.innerHTML = "";
+
+      const filledCount = images.length;
+      const remaining   = 10 - filledCount;
 
       if (images.length === 0) {
-        // keep placeholder
+        mainEl.innerHTML = `<div class="no-image">◻</div>`;
       } else {
-        // Set main image
-        mainEl.innerHTML = `<img src="${images[0]}" alt="${brandName}" id="main-img" />`;
-        mainEl.addEventListener("click", () => openLightbox(images[0]));
+        setMainImage(images[0], mainEl);
+        activeImageUrl = images[0];
 
-        // Thumbnails (only if more than one image)
-        if (images.length > 1) {
-          images.forEach((url, i) => {
-            const thumb = document.createElement("div");
-            thumb.className = `thumb${i === 0 ? " active" : ""}`;
-            thumb.innerHTML = `<img src="${url}" alt="" loading="lazy" />`;
-            thumb.addEventListener("click", () => {
-              document.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
-              thumb.classList.add("active");
-              const mainImg = document.getElementById("main-img");
-              mainImg.src = url;
-              mainEl.onclick = () => openLightbox(url);
-            });
-            thumbsEl.appendChild(thumb);
+        images.forEach((url, i) => {
+          const thumb = document.createElement("div");
+          thumb.className = `thumb${i === 0 ? " active" : ""}`;
+          thumb.innerHTML = `<img src="${url}" alt="" loading="lazy" />`;
+          thumb.addEventListener("click", () => {
+            document.querySelectorAll(".thumb").forEach(t => t.classList.remove("active"));
+            thumb.classList.add("active");
+            setMainImage(url, mainEl);
+            activeImageUrl = url;
           });
-        }
+          thumbsEl.appendChild(thumb);
+        });
       }
 
-    })();
+      // Add-photo tile (only if owner and slots remain)
+      if (isOwner && remaining > 0) {
+        const addTile = document.createElement("div");
+        addTile.className = "thumb-add";
+        addTile.innerHTML = `<span class="plus">＋</span><span>${remaining} left</span>`;
+        addTile.addEventListener("click", () => {
+          const input = document.getElementById("photo-file-input");
+          input.value = "";
+          // Allow selecting up to `remaining` files
+          input.multiple = remaining > 1;
+          input.click();
+        });
+        thumbsEl.appendChild(addTile);
+      }
+    }
+
+    function setMainImage(url, mainEl) {
+      mainEl.innerHTML = `<img src="${url}" alt="" id="main-img" />`;
+      mainEl.onclick   = () => window.openLightbox(url);
+    }
+
+    // ── PHOTO UPLOAD HANDLER ──
+    document.getElementById("photo-file-input").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files);
+      if (!files.length) return;
+
+      // Re-fetch current item to get latest filled slots
+      const { data: current } = await supabase
+        .from("items")
+        .select(IMG_COLS.join(", "))
+        .eq("id", currentItemId)
+        .single();
+
+      const existing = IMG_COLS.map(c => current?.[c]).filter(Boolean);
+      const slots    = IMG_COLS.filter(c => !current?.[c]); // empty column names
+
+      if (slots.length === 0) {
+        setUploadStatus("error", "Maximum of 10 photos reached.");
+        return;
+      }
+
+      const toUpload = files.slice(0, slots.length); // cap at available slots
+
+      setUploadStatus("uploading", `Uploading ${toUpload.length} photo${toUpload.length > 1 ? "s" : ""}…`);
+
+      try {
+        const updates = {};
+
+        for (let i = 0; i < toUpload.length; i++) {
+          const file     = toUpload[i];
+          const filename = `${currentUserId}/${Date.now()}-${i}-${file.name.replace(/\s+/g, "_")}`;
+
+          const { error: uploadErr } = await supabase.storage
+            .from(BUCKET)
+            .upload(filename, file, { cacheControl: "3600", upsert: false });
+
+          if (uploadErr) throw new Error(uploadErr.message);
+
+          const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(filename);
+          updates[slots[i]] = urlData.publicUrl;
+        }
+
+        // Save new URLs to database
+        const { error: updateErr } = await supabase
+          .from("items")
+          .update(updates)
+          .eq("id", currentItemId);
+
+        if (updateErr) throw new Error(updateErr.message);
+
+        setUploadStatus("success", `${toUpload.length} photo${toUpload.length > 1 ? "s" : ""} added!`);
+
+        // Rebuild gallery with new images
+        const { data: refreshed } = await supabase
+          .from("items")
+          .select(IMG_COLS.join(", ") + ", maker_id, user_id, is_private, variant, brands(company), categories(name), materials(name), comments, extra, size, msrp, born_on_date")
+          .eq("id", currentItemId)
+          .single();
+
+        if (refreshed) buildGallery(refreshed);
+
+        setTimeout(() => setUploadStatus("", ""), 3000);
+
+      } catch (err) {
+        setUploadStatus("error", "Upload failed: " + err.message);
+      }
+    });
 
     // ── LIGHTBOX ──
     window.openLightbox = (src) => {
