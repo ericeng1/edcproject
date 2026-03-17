@@ -141,6 +141,7 @@
     .brand-card:nth-child(1) { animation-delay: 0.05s; }
     .brand-card:nth-child(2) { animation-delay: 0.12s; }
     .brand-card:nth-child(3) { animation-delay: 0.19s; }
+    .brand-card:nth-child(4) { animation-delay: 0.26s; }
 
     @keyframes cardIn {
       from { opacity: 0; transform: translateY(16px); }
@@ -302,6 +303,15 @@
       <div class="brand-cta">Log an item →</div>
     </a>
 
+    <a href="form-zachwoods.html" class="brand-card" id="card-zachwoods">
+      <div>
+        <div class="brand-number">04</div>
+        <div class="brand-company">Zach Woods<br>Knives</div>
+        <div class="brand-maker">Zach Wood</div>
+      </div>
+      <div class="brand-cta">Log an item →</div>
+    </a>
+
   </div>
 
   <footer class="dash-footer">
@@ -327,6 +337,7 @@
         { key: "draft_atwood",      id: "card-atwood" },
         { key: "draft_horton",      id: "card-horton" },
         { key: "draft_steelflame",  id: "card-steelflame" },
+        { key: "draft_zachwoods",    id: "card-zachwoods" },
       ].forEach(({ key, id }) => {
         try {
           const raw = localStorage.getItem(key);
