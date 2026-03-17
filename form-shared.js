@@ -254,3 +254,199 @@ export async function saveItem({ makerId, step1, step2, imageUrls, userId }) {
   const { error } = await supabase.from("items").insert([item]);
   if (error) throw new Error(error.message);
 }
+
+// ── CONFIRM DIALOG ────────────────────────────────────────────────────────────
+/**
+ * Mobile-friendly promise-based confirmation dialog.
+ * Resolves true (confirm) or false (cancel).
+ * Optionally shows an input field when inputLabel is provided,
+ * in which case it resolves the trimmed string or null on cancel.
+ */
+export function showConfirmDialog({ title, message, inputLabel = null, inputPlaceholder = "", confirmText = "Confirm", cancelText = "Cancel" }) {
+  return new Promise((resolve) => {
+
+    // Overlay
+    const overlay = document.createElement("div");
+    overlay.id = "confirm-overlay";
+    Object.assign(overlay.style, {
+      position: "fixed", inset: "0",
+      background: "rgba(0,0,0,0.72)",
+      zIndex: "10000",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
+      padding: "0 0 env(safe-area-inset-bottom)",
+      animation: "overlayIn 0.2s ease both",
+    });
+
+    // Sheet
+    const sheet = document.createElement("div");
+    Object.assign(sheet.style, {
+      background: "#1e1e22",
+      border: "1px solid #2a2a2e",
+      borderRadius: "20px 20px 0 0",
+      padding: "24px 24px 32px",
+      width: "100%",
+      maxWidth: "520px",
+      animation: "sheetIn 0.25s cubic-bezier(0.34,1.1,0.64,1) both",
+      fontFamily: "'Lato', sans-serif",
+    });
+
+    // Inject keyframes once
+    if (!document.getElementById("dialog-keyframes")) {
+      const style = document.createElement("style");
+      style.id = "dialog-keyframes";
+      style.textContent = `
+        @keyframes overlayIn { from{opacity:0} to{opacity:1} }
+        @keyframes sheetIn { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Title
+    const titleEl = document.createElement("div");
+    titleEl.textContent = title;
+    Object.assign(titleEl.style, {
+      fontFamily: "'Bebas Neue', sans-serif",
+      fontSize: "22px",
+      letterSpacing: "0.06em",
+      color: "#f0ede8",
+      marginBottom: "8px",
+    });
+
+    // Message
+    const msgEl = document.createElement("div");
+    msgEl.textContent = message;
+    Object.assign(msgEl.style, {
+      fontSize: "14px", color: "#737278",
+      marginBottom: inputLabel ? "18px" : "24px",
+      lineHeight: "1.5",
+    });
+
+    // Optional text input
+    let inputEl = null;
+    if (inputLabel) {
+      const labelEl = document.createElement("label");
+      labelEl.textContent = inputLabel;
+      Object.assign(labelEl.style, {
+        display: "block", fontSize: "10px", fontWeight: "700",
+        letterSpacing: "0.14em", textTransform: "uppercase",
+        color: "#737278", marginBottom: "8px",
+      });
+
+      inputEl = document.createElement("input");
+      inputEl.type = "text";
+      inputEl.placeholder = inputPlaceholder;
+      Object.assign(inputEl.style, {
+        width: "100%", background: "#111213",
+        border: "1px solid #2a2a2e", borderRadius: "10px",
+        color: "#f0ede8", fontFamily: "'Lato', sans-serif",
+        fontSize: "16px", fontWeight: "300",
+        padding: "13px 14px", outline: "none",
+        marginBottom: "20px", boxSizing: "border-box",
+        WebkitAppearance: "none",
+      });
+
+      inputEl.addEventListener("focus", () => { inputEl.style.borderColor = "#c8964a"; inputEl.style.boxShadow = "0 0 0 3px rgba(200,150,74,0.12)"; });
+      inputEl.addEventListener("blur",  () => { inputEl.style.borderColor = "#2a2a2e"; inputEl.style.boxShadow = "none"; });
+
+      sheet.appendChild(labelEl);
+      sheet.appendChild(inputEl);
+    }
+
+    // Button row
+    const btnRow = document.createElement("div");
+    Object.assign(btnRow.style, { display: "flex", gap: "10px" });
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.textContent = cancelText;
+    Object.assign(cancelBtn.style, {
+      flex: "1", padding: "14px", borderRadius: "10px",
+      background: "none", border: "1px solid #2a2a2e",
+      color: "#737278", fontFamily: "'Lato', sans-serif",
+      fontSize: "15px", cursor: "pointer",
+    });
+
+    const confirmBtn = document.createElement("button");
+    confirmBtn.textContent = confirmText;
+    Object.assign(confirmBtn.style, {
+      flex: "2", padding: "14px", borderRadius: "10px",
+      background: "#c8964a", border: "none",
+      color: "#111", fontFamily: "'Lato', sans-serif",
+      fontSize: "15px", fontWeight: "700", cursor: "pointer",
+    });
+
+    const close = (result) => {
+      overlay.style.opacity = "0";
+      overlay.style.transition = "opacity 0.18s ease";
+      setTimeout(() => overlay.remove(), 180);
+      resolve(result);
+    };
+
+    cancelBtn.addEventListener("click",  () => close(inputLabel ? null : false));
+    confirmBtn.addEventListener("click", () => {
+      if (inputLabel) {
+        const val = inputEl?.value.trim();
+        if (!val) { inputEl.style.borderColor = "#c07070"; inputEl.focus(); return; }
+        close(val);
+      } else {
+        close(true);
+      }
+    });
+
+    // Enter key submits
+    if (inputEl) {
+      inputEl.addEventListener("keydown", (e) => { if (e.key === "Enter") confirmBtn.click(); });
+    }
+
+    // Tap overlay to cancel
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(inputLabel ? null : false); });
+
+    btnRow.appendChild(cancelBtn);
+    btnRow.appendChild(confirmBtn);
+
+    sheet.insertBefore(titleEl, sheet.firstChild);
+    sheet.insertBefore(msgEl,   titleEl.nextSibling);
+    sheet.appendChild(btnRow);
+    overlay.appendChild(sheet);
+    document.body.appendChild(overlay);
+
+    // Auto-focus input on open
+    setTimeout(() => inputEl?.focus(), 280);
+  });
+}
+
+// ── ADD NEW CATEGORY OR MATERIAL ──────────────────────────────────────────────
+/**
+ * Prompts user for a new name via the confirm dialog,
+ * inserts it into Supabase, and returns { id, name } or null on cancel.
+ *
+ * @param {string} table  — "categories" or "materials"
+ */
+export async function addNewLookup(table) {
+  const label = table === "categories" ? "Category" : "Material";
+
+  const name = await showConfirmDialog({
+    title:            `New ${label}`,
+    message:          `Enter a name for the new ${label.toLowerCase()}. It will be saved to the database and available to all users.`,
+    inputLabel:       `${label} name`,
+    inputPlaceholder: `e.g. ${table === "categories" ? "Prybar, Bead…" : "CPM-S45VN, Brass…"}`,
+    confirmText:      `Add ${label}`,
+    cancelText:       "Cancel",
+  });
+
+  if (!name) return null;  // user cancelled
+
+  const { data, error } = await supabase
+    .from(table)
+    .insert([{ name }])
+    .select()
+    .single();
+
+  if (error) {
+    showToast(`Failed to add ${label.toLowerCase()}: ${error.message}`, "error");
+    return null;
+  }
+
+  showToast(`${label} "${data.name}" added ✓`, "success");
+  haptic("success");
+  return { id: data.id, name: data.name };
+}

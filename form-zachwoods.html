@@ -58,6 +58,7 @@
           <div class="chip" data-id="3">Pry Bar</div>
           <div class="chip" data-id="4">Spinner</div>
           <div class="chip" data-id="1">Tag</div>
+          <div class="chip chip-add" id="add-category-chip">＋ Add</div>
         </div>
       </div>
 
@@ -73,6 +74,7 @@
           <div class="chip" data-id="6">Delrin</div>
           <div class="chip" data-id="2">S30V</div>
           <div class="chip" data-id="3">Titanium</div>
+          <div class="chip chip-add" id="add-material-chip">＋ Add</div>
         </div>
       </div>
 
@@ -161,7 +163,7 @@
   </div><!-- /.form-wrap -->
 
   <script type="module">
-    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft, initProgressiveUpload, saveItem } from "./form-shared.js";
+    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft, initProgressiveUpload, saveItem, addNewLookup } from "./form-shared.js";
 
     const MAKER_ID  = 4;
     const DRAFT_KEY = "draft_zachwoods";
@@ -198,6 +200,55 @@
 
       initChips("category-chips", id => { selectedCategoryId = id; });
       initChips("material-chips", id => { selectedMaterialId = id; });
+
+      // ── Add new category ──
+      document.getElementById("add-category-chip").addEventListener("click", async () => {
+        const result = await addNewLookup("categories");
+        if (!result) return;
+        // Append new chip before the "+ Add" chip
+        const addChip = document.getElementById("add-category-chip");
+        const newChip = document.createElement("div");
+        newChip.className = "chip";
+        newChip.dataset.id = result.id;
+        newChip.textContent = result.name;
+        addChip.parentElement.insertBefore(newChip, addChip);
+        // Auto-select the new chip
+        document.querySelectorAll("#category-chips .chip").forEach(c => c.classList.remove("selected"));
+        newChip.classList.add("selected");
+        selectedCategoryId = result.id;
+        newChip.addEventListener("click", () => {
+          document.querySelectorAll("#category-chips .chip").forEach(c => c.classList.remove("selected"));
+          newChip.classList.add("selected");
+          haptic("light");
+          selectedCategoryId = result.id;
+          autosaveDraft();
+        });
+        autosaveDraft();
+      });
+
+      // ── Add new material ──
+      document.getElementById("add-material-chip").addEventListener("click", async () => {
+        const result = await addNewLookup("materials");
+        if (!result) return;
+        const addChip = document.getElementById("add-material-chip");
+        const newChip = document.createElement("div");
+        newChip.className = "chip";
+        newChip.dataset.id = result.id;
+        newChip.textContent = result.name;
+        addChip.parentElement.insertBefore(newChip, addChip);
+        // Auto-select the new chip
+        document.querySelectorAll("#material-chips .chip").forEach(c => c.classList.remove("selected"));
+        newChip.classList.add("selected");
+        selectedMaterialId = result.id;
+        newChip.addEventListener("click", () => {
+          document.querySelectorAll("#material-chips .chip").forEach(c => c.classList.remove("selected"));
+          newChip.classList.add("selected");
+          haptic("light");
+          selectedMaterialId = result.id;
+          autosaveDraft();
+        });
+        autosaveDraft();
+      });
 
       // ── Progressive upload ──
       const photoInput = document.getElementById("photo-input");
