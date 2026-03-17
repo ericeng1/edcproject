@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maker — Showoffy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #f5f3ef;
+      --surface:  #ffffff;
+      --surface2: #eeece8;
+      --border:   #dedad4;
+      --text:     #1a1916;
+      --muted:    #9a9690;
+      --accent:   #2b2926;
+      --rule:     #d4d0c8;
+      --tag-bg:   #eceae5;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      font-weight: 300;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 28px; }
+
+    .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .back-link {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--text); }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .topbar-user {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .btn-flat {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-family: 'Jost', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-flat:hover { border-color: var(--text); color: var(--text); }
+
+    /* ── MAKER HEADER ── */
+    .maker-header {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 56px 40px 40px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .maker-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .maker-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 700;
+      line-height: 1.05;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .maker-person {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .maker-stats {
+      display: flex;
+      gap: 24px;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .maker-stats strong { color: var(--text); font-weight: 500; }
+
+    /* ── FEED ── */
+    .feed {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 40px 80px;
+    }
+
+    /* ── FEED ITEM ── */
+    .feed-item {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+      animation: slideIn 0.35s ease both;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .feed-item:hover { background: rgba(0,0,0,0.02); }
+
+    /* Image column */
+    .feed-img-wrap {
+      width: 280px;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+
+    .feed-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .feed-item:hover .feed-img-wrap img { transform: scale(1.04); }
+
+    .feed-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 28px;
+    }
+
+    /* Meta column */
+    .feed-meta {
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .feed-date {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-rows { display: flex; flex-direction: column; gap: 14px; }
+
+    .meta-row { display: flex; flex-direction: column; gap: 3px; }
+
+    .meta-row-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .meta-row-value {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .meta-row-value.empty { color: var(--muted); font-style: italic; font-size: 13px; }
+
+    /* ── SENTINEL & LOADER ── */
+    .sentinel { height: 1px; margin-top: 40px; }
+
+    .feed-loader {
+      text-align: center;
+      padding: 32px;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: none;
+    }
+
+    .feed-loader.visible { display: block; }
+
+    .feed-end {
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--rule);
+      display: none;
+    }
+
+    .feed-end.visible { display: block; }
+
+    /* ── STATE PAGES ── */
+    .state-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 80px 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      display: none;
+    }
+
+    .state-page.visible { display: block; }
+
+    .state-page a { color: var(--text); text-decoration: underline; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 620px) {
+      .topbar { padding: 0 20px; }
+      .maker-header, .feed { padding-left: 20px; padding-right: 20px; }
+      .feed-item { grid-template-columns: 140px 1fr; }
+      .feed-img-wrap { width: 140px; }
+      .feed-meta { padding: 16px 18px; gap: 12px; }
+      .meta-row-value { font-size: 14px; }
+      .topbar-user { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="my-items.html" class="brand">Showoffy</a>
+      <a href="my-items.html" class="back-link">← Collection</a>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-user"></span>
+      <a href="index.html" class="btn-flat">+ Add Item</a>
+      <button class="btn-flat" id="signout-btn" style="display:none;">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- MAKER HEADER -->
+  <div class="maker-header" id="maker-header" style="display:none;">
+    <div class="maker-label">Maker</div>
+    <div class="maker-name"  id="maker-name"></div>
+    <div class="maker-person" id="maker-person"></div>
+    <div class="maker-stats">
+      <span><strong id="stat-count">—</strong> Public Items</span>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div class="state-page" id="state-error">
+    <p id="error-msg">Maker not found.</p>
+    <p style="margin-top:12px;"><a href="my-items.html">← Back to collection</a></p>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div class="state-page" id="state-empty">
+    <p>No public items found for this maker yet.</p>
+    <p style="margin-top:12px;"><a href="index.html">Be the first to add one →</a></p>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed" id="feed"></div>
+
+  <!-- LOADER + SENTINEL -->
+  <div class="feed-loader" id="feed-loader">Loading more…</div>
+  <div class="feed-end"    id="feed-end">— End of feed —</div>
+  <div class="sentinel"    id="sentinel"></div>
+
+  <script type="module">
+    import { supabase } from "./supabaseClient.js";
+
+    (async () => {
+
+      // ── AUTH (optional — page is public) ──
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUserId = session?.user?.id ?? null;
+
+      if (session) {
+        document.getElementById("topbar-user").textContent = session.user.email;
+        document.getElementById("signout-btn").style.display = "inline-flex";
+        document.getElementById("signout-btn").addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          window.location.href = "login.html";
+        });
+      }
+
+      // ── GET MAKER ID FROM URL ──
+      const params  = new URLSearchParams(window.location.search);
+      const makerId = params.get("id");
+
+      const showError = (msg = "Maker not found.") => {
+        document.getElementById("error-msg").textContent = msg;
+        document.getElementById("state-error").classList.add("visible");
+      };
+
+      if (!makerId) { showError("No maker ID provided."); return; }
+
+      // ── FETCH MAKER ──
+      const { data: maker, error: makerErr } = await supabase
+        .from("brands")
+        .select("id, company, first_name, last_name")
+        .eq("id", makerId)
+        .single();
+
+      if (makerErr || !maker) { showError("Maker not found."); return; }
+
+      // Populate header
+      document.title = `${maker.company} — Showoffy`;
+      document.getElementById("maker-name").textContent   = maker.company;
+      const personName = [maker.first_name, maker.last_name].filter(Boolean).join(" ").trim();
+      const personEl   = document.getElementById("maker-person");
+      if (personName) { personEl.textContent = personName; }
+      else            { personEl.style.display = "none"; }
+      document.getElementById("maker-header").style.display = "block";
+
+      // ── PAGINATION STATE ──
+      const PAGE_SIZE = 10;
+      let offset      = 0;
+      let loading     = false;
+      let exhausted   = false;
+      let totalShown  = 0;
+
+      // ── FETCH A PAGE OF ITEMS ──
+      async function fetchPage() {
+        if (loading || exhausted) return;
+        loading = true;
+        document.getElementById("feed-loader").classList.add("visible");
+
+        // Build query — public items for this maker, excluding current user's own
+        let query = supabase
+          .from("items")
+          .select(`
+            id,
+            variant,
+            image_url1, image_url2, image_url3,
+            created_at,
+            categories ( name ),
+            materials  ( name )
+          `)
+          .eq("maker_id", makerId)
+          .eq("is_private", false)
+          .order("created_at", { ascending: false })
+          .range(offset, offset + PAGE_SIZE - 1);
+
+        // If logged in, exclude the current user's items
+        if (currentUserId) {
+          query = query.neq("user_id", currentUserId);
+        }
+
+        const { data: items, error } = await query;
+
+        document.getElementById("feed-loader").classList.remove("visible");
+        loading = false;
+
+        if (error) {
+          showError("Error loading items: " + error.message);
+          return;
+        }
+
+        if (!items || items.length === 0) {
+          if (offset === 0) {
+            // First load, nothing at all
+            document.getElementById("state-empty").classList.add("visible");
+            document.getElementById("stat-count").textContent = "0";
+          } else {
+            document.getElementById("feed-end").classList.add("visible");
+          }
+          exhausted = true;
+          return;
+        }
+
+        // Update total count display on first load
+        if (offset === 0) {
+          // We don't know the full count without a separate query, so show "10+" style
+          // or do a count query
+          const { count } = await supabase
+            .from("items")
+            .select("id", { count: "exact", head: true })
+            .eq("maker_id", makerId)
+            .eq("is_private", false)
+            .neq("user_id", currentUserId ?? "00000000-0000-0000-0000-000000000000");
+          document.getElementById("stat-count").textContent = count ?? items.length;
+        }
+
+        renderItems(items);
+        offset += items.length;
+        totalShown += items.length;
+
+        if (items.length < PAGE_SIZE) {
+          exhausted = true;
+          document.getElementById("feed-end").classList.add("visible");
+        }
+      }
+
+      // ── RENDER ITEMS INTO FEED ──
+      function pickImage(item) {
+        const candidates = [item.image_url1, item.image_url2, item.image_url3].filter(Boolean);
+        if (candidates.length === 0) return null;
+        return candidates[Math.floor(Math.random() * candidates.length)];
+      }
+
+      function formatDate(iso) {
+        if (!iso) return "";
+        return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+      }
+
+      function renderItems(items) {
+        const feed = document.getElementById("feed");
+
+        items.forEach((item, i) => {
+          const imgUrl = pickImage(item);
+
+          const imageHtml = imgUrl
+            ? `<img src="${imgUrl}" alt="" loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=feed-img-placeholder>◻</div>'" />`
+            : `<div class="feed-img-placeholder">◻</div>`;
+
+          const material = item.materials?.name  || null;
+          const category = item.categories?.name || null;
+          const variant  = (item.variant && item.variant !== "none") ? item.variant : null;
+
+          const metaRow = (label, value) => `
+            <div class="meta-row">
+              <div class="meta-row-label">${label}</div>
+              <div class="meta-row-value${value ? "" : " empty"}">${value || "—"}</div>
+            </div>`;
+
+          const el = document.createElement("a");
+          el.href  = `item.html?id=${item.id}`;
+          el.className = "feed-item";
+          el.style.animationDelay = `${i * 0.04}s`;
+
+          el.innerHTML = `
+            <div class="feed-img-wrap">${imageHtml}</div>
+            <div class="feed-meta">
+              <div class="feed-date">${formatDate(item.created_at)}</div>
+              <div class="meta-rows">
+                ${metaRow("Material", material)}
+                ${metaRow("Category", category)}
+                ${metaRow("Variant",  variant)}
+              </div>
+            </div>
+          `;
+
+          feed.appendChild(el);
+        });
+      }
+
+      // ── INTERSECTION OBSERVER for lazy load ──
+      const sentinel = document.getElementById("sentinel");
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) fetchPage();
+      }, { rootMargin: "200px" }); // Start loading 200px before sentinel hits viewport
+
+      observer.observe(sentinel);
+
+      // Load first page immediately
+      await fetchPage();
+
+      // Stop observing once exhausted
+      const checkExhausted = setInterval(() => {
+        if (exhausted) {
+          observer.disconnect();
+          clearInterval(checkExhausted);
+        }
+      }, 500);
+
+    })();
+  </script>
+
+</body>
+</html>

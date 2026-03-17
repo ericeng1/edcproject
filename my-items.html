@@ -190,6 +190,14 @@
       letter-spacing: 0.08em;
     }
 
+    .brand-name-link {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.2s;
+    }
+
+    .brand-name-link:hover { color: var(--accent); }
+
     .brand-maker {
       font-size: 12px;
       color: var(--muted);
@@ -434,9 +442,12 @@
         groupEl.className = "brand-group";
         groupEl.style.animationDelay = `${groupIdx * 0.07}s`;
 
+        const makerId = brand?.id ?? null;
         groupEl.innerHTML = `
           <div class="brand-header">
-            <div class="brand-name">${companyName}</div>
+            ${makerId
+              ? `<a href="maker.html?id=${makerId}" class="brand-name brand-name-link">${companyName}</a>`
+              : `<div class="brand-name">${companyName}</div>`}
             ${makerName ? `<div class="brand-maker">by ${makerName}</div>` : ""}
             <div class="brand-count">${groupItems.length} item${groupItems.length !== 1 ? "s" : ""}</div>
           </div>
