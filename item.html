@@ -588,7 +588,7 @@
       addCell("Extra",    item.extra || null);
 
       // Comments
-      if (item.comments) {
+      if (item.comments && isOwner) {
         document.getElementById("comments-block").style.display = "block";
         document.getElementById("comments-text").textContent    = item.comments;
       }
