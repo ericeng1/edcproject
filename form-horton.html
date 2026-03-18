@@ -156,7 +156,8 @@
     <script type="module">
     import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft,
              initProgressiveUpload, saveItem, addNewLookup, loadChips,
-             initDatePicker, setToday, readPrefillParams } from "./form-shared.js";
+             initDatePicker, setToday, readPrefillParams,
+             CATEGORY_MATERIAL_DEFAULTS } from "./form-shared.js";
 
     const MAKER_ID  = 2;
     const DRAFT_KEY = "draft_horton";
@@ -172,9 +173,10 @@
       });
 
       // ── Mutable state ──
-      let selectedCategoryId = null;
-      let selectedMaterialId = null;
-      let uploadedUrls       = [];
+      let selectedCategoryId    = null;
+      let selectedMaterialId    = null;
+      let uploadedUrls           = [];
+      let materialPickedByUser   = false; // true once user manually taps a material chip
 
       // ── Draft autosave — defined early so callbacks below can reference it ──
       function autosaveDraft() {
@@ -187,18 +189,42 @@
       }
 
       // ── Load chips dynamically from Supabase ──
+      // Load both chip groups first, then wire the cross-chip default logic
       const categoryChips = await loadChips({
         table:       "categories",
         containerId: "category-chips",
         addChipId:   "add-category-chip",
-        onSelect:    id => { selectedCategoryId = id; autosaveDraft(); },
+        onSelect:    id => {
+          selectedCategoryId = id;
+          autosaveDraft();
+        },
       });
 
       const materialChips = await loadChips({
         table:       "materials",
         containerId: "material-chips",
         addChipId:   "add-material-chip",
-        onSelect:    id => { selectedMaterialId = id; autosaveDraft(); },
+        onSelect:    id => {
+          selectedMaterialId   = id;
+          materialPickedByUser = true;
+          autosaveDraft();
+        },
+      });
+
+      // ── Wire material default after BOTH chip groups are loaded ──
+      // Patch categoryChips to also apply the material soft-default on selection
+      const catContainer = document.getElementById("category-chips");
+      catContainer.querySelectorAll(".chip:not(.chip-add)").forEach(chip => {
+        chip.addEventListener("click", () => {
+          if (materialPickedByUser) return; // user already chose — don't override
+          const catId    = parseInt(chip.dataset.id);
+          const defaults = CATEGORY_MATERIAL_DEFAULTS[catId];
+          if (defaults?.length) {
+            materialChips.setSelected(defaults[0]);
+            selectedMaterialId = defaults[0];
+            autosaveDraft();
+          }
+        });
       });
 
       // ── Add new category ──
@@ -254,7 +280,11 @@
       const prefill = readPrefillParams();
       if (prefill) {
         if (prefill.category_id) { categoryChips.setSelected(prefill.category_id); selectedCategoryId = prefill.category_id; }
-        if (prefill.material_id) { materialChips.setSelected(prefill.material_id); selectedMaterialId = prefill.material_id; }
+        if (prefill.material_id) {
+          materialChips.setSelected(prefill.material_id);
+          selectedMaterialId  = prefill.material_id;
+          materialPickedByUser = true;
+        }
         if (prefill.variant)     document.getElementById("variant").value = prefill.variant;
         if (prefill.size)        document.getElementById("size").value    = prefill.size;
         if (prefill.msrp)        document.getElementById("msrp").value    = prefill.msrp;
@@ -274,7 +304,11 @@
         banner.style.display = "flex";
 
         if (draft.category_id) { categoryChips.setSelected(draft.category_id); selectedCategoryId = draft.category_id; }
-        if (draft.material_id) { materialChips.setSelected(draft.material_id); selectedMaterialId = draft.material_id; }
+        if (draft.material_id) {
+          materialChips.setSelected(draft.material_id);
+          selectedMaterialId  = draft.material_id;
+          materialPickedByUser = true; // treat restored draft as a deliberate choice
+        }
         if (draft.is_private)  document.getElementById("is-private").checked = true;
         if (draft.uploadedUrls?.length) uploader.setUrls(draft.uploadedUrls);
 

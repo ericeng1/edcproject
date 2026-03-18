@@ -13,6 +13,53 @@ import { supabase } from "./supabaseClient.js";
 
 const BUCKET   = "item-images";
 const MAX_PHOTOS = 10;
+// ── CATEGORY → MATERIAL DEFAULTS ─────────────────────────────────────────────
+// Maps category_id → [primary_default_material_id, ...also_common]
+// First entry is the soft default that gets pre-selected.
+// Edit this object anytime to change or add mappings — no DB changes needed.
+export const CATEGORY_MATERIAL_DEFAULTS = {
+  2: [2, 8, 4],       // Knife    → S30V, 3V, D2
+  3: [8, 1, 4, 10, 3], // Pry bar  → 3V, A2, D2, Z-wear, Titanium
+  4: [9, 14, 2],      // Spinner  → Bronze, Brass, S30V
+  1: [5, 1, 3],       // Tag      → Copper, A2, Titanium
+  5: [3, 14, 9, 6],   // Bead     → Titanium, Brass, Bronze, Delrin
+  7: [8, 1, 4, 2, 10, 3], // Falcon → 3V, A2, D2, S30V, Z-wear, Titanium
+};
+
+// ── LEVENSHTEIN DISTANCE ──────────────────────────────────────────────────────
+// Computes edit distance between two strings (case-insensitive).
+function levenshtein(a, b) {
+  a = a.toLowerCase().trim();
+  b = b.toLowerCase().trim();
+  if (a === b) return 0;
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+  }
+  return dp[m][n];
+}
+
+// Returns the closest existing name if within threshold, else null.
+function findSimilar(name, existingNames, threshold = 2) {
+  let best = null, bestDist = Infinity;
+  for (const existing of existingNames) {
+    const d = levenshtein(name, existing);
+    if (d > 0 && d <= threshold && d < bestDist) {
+      best = existing;
+      bestDist = d;
+    }
+  }
+  return best;
+}
+
+
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 export async function requireAuth() {
@@ -432,6 +479,10 @@ export function showConfirmDialog({ title, message, inputLabel = null, inputPlac
 export async function addNewLookup(table) {
   const label = table === "categories" ? "Category" : "Material";
 
+  // Fetch existing names for similarity check
+  const { data: existing } = await supabase.from(table).select("name");
+  const existingNames = (existing || []).map(r => r.name);
+
   const name = await showConfirmDialog({
     title:            `New ${label}`,
     message:          `Enter a name for the new ${label.toLowerCase()}. It will be saved to the database and available to all users.`,
@@ -442,6 +493,28 @@ export async function addNewLookup(table) {
   });
 
   if (!name) return null;  // user cancelled
+
+  // ── Fuzzy similarity check ──
+  const similar = findSimilar(name, existingNames, 2);
+  if (similar) {
+    // Build a warning dialog — user can still proceed or go back to select existing
+    const proceed = await showConfirmDialog({
+      title:       "Similar entry exists",
+      message:     `"${similar}" already exists and looks very similar. Are you sure "${name}" is a different ${label.toLowerCase()}?`,
+      confirmText: `Yes, add "${name}"`,
+      cancelText:  `Use "${similar}" instead`,
+    });
+    if (!proceed) {
+      // Return the existing entry so the form can select it
+      const match = (existing || []).find(r => r.name.toLowerCase().trim() === similar.toLowerCase().trim());
+      if (match) {
+        showToast(`Selected existing: ${match.name}`, "info");
+        haptic("light");
+        return { id: match.id, name: match.name };
+      }
+      return null;
+    }
+  }
 
   const { data, error } = await supabase
     .from(table)
