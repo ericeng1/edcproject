@@ -169,6 +169,55 @@
 
     .field-textarea { resize: vertical; min-height: 80px; }
 
+    /* Date field wrapper */
+    .date-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .date-wrap .field-input { flex: 1; padding-right: 44px; }
+    .date-cal-btn {
+      position: absolute; right: 0; top: 0; height: 100%; width: 42px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 16px;
+      border-radius: 0 10px 10px 0;
+      transition: color 0.15s, background 0.15s;
+    }
+    .date-cal-btn:hover { color: var(--accent); background: rgba(200,150,74,0.06); }
+    .date-today-btn {
+      margin-top: 6px; background: none; border: none;
+      font-family: var(--font-body); font-size: 11px; color: var(--accent);
+      cursor: pointer; letter-spacing: 0.06em; padding: 0;
+      display: inline-flex; align-items: center; gap: 4px; opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .date-today-btn:hover { opacity: 1; }
+
+    /* Add Similar button */
+    .add-similar-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px;
+      border: 1px solid rgba(141,187,209,0.35);
+      background: rgba(141,187,209,0.06);
+      color: var(--accent2);
+      font-family: var(--font-body); font-size: 13px; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .add-similar-btn:hover { border-color: var(--accent2); background: rgba(141,187,209,0.12); }
+
+    /* Privacy row with Add Similar */
+    .privacy-actions {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .privacy-row-inner {
+      display: flex; align-items: center;
+      justify-content: space-between; flex: 1; cursor: pointer;
+    }
+
     .field-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -545,8 +594,12 @@
             <input type="number" class="field-input" id="edit-msrp" step="0.01" inputmode="decimal" />
           </div>
           <div class="field-group">
-            <label class="field-label" for="edit-born">Born On Date</label>
-            <input type="date" class="field-input" id="edit-born" />
+            <label class="field-label" for="edit-born">Date Acquired</label>
+            <div class="date-wrap">
+              <input type="date" class="field-input" id="edit-born" />
+              <button type="button" class="date-cal-btn" id="edit-born-cal-btn" title="Open calendar" aria-label="Open calendar">📅</button>
+            </div>
+            <button type="button" class="date-today-btn" id="edit-born-today-btn">⊕ Use today's date</button>
           </div>
         </div>
         <div class="field-group">
@@ -559,19 +612,22 @@
         </div>
       </div>
 
-      <!-- Privacy -->
+      <!-- Privacy + Add Similar -->
       <div class="edit-section">
         <div class="section-title">Visibility</div>
-        <label class="privacy-row" for="edit-private">
-          <div class="privacy-info">
-            <div class="privacy-title">Private entry</div>
-            <div class="privacy-desc">Only visible to you</div>
-          </div>
-          <div class="toggle-wrap">
-            <input type="checkbox" id="edit-private" />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </div>
-        </label>
+        <div class="privacy-actions">
+          <label class="privacy-row-inner" for="edit-private">
+            <div class="privacy-info">
+              <div class="privacy-title">Private entry</div>
+              <div class="privacy-desc">Only visible to you</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="edit-private" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </div>
+          </label>
+          <a id="add-similar-btn" href="#" class="add-similar-btn" style="display:none;">⊕ Add Similar</a>
+        </div>
       </div>
 
       <!-- Save -->
@@ -811,6 +867,7 @@
       if (error || !item) { document.getElementById("state-error").style.display = "block"; return; }
 
       currentItem = item;
+      const isOwner = true; // page already enforces owner-only access via query
       imageUrls   = IMG_COLS.map(c => item[c]).filter(Boolean);
 
       // Populate page subtitle
@@ -833,6 +890,47 @@
       document.getElementById("edit-size").value     = item.size         || "";
       document.getElementById("edit-msrp").value     = item.msrp         || "";
       document.getElementById("edit-born").value     = item.born_on_date || "";
+
+      // Wire date calendar button + today shortcut
+      const calBtn   = document.getElementById("edit-born-cal-btn");
+      const todayBtn = document.getElementById("edit-born-today-btn");
+      const bornInput = document.getElementById("edit-born");
+
+      calBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (typeof bornInput.showPicker === "function") {
+          try { bornInput.showPicker(); return; } catch {}
+        }
+        bornInput.focus();
+      });
+
+      todayBtn.addEventListener("click", () => {
+        const now  = new Date();
+        const yyyy = now.getFullYear();
+        const mm   = String(now.getMonth() + 1).padStart(2, "0");
+        const dd   = String(now.getDate()).padStart(2, "0");
+        bornInput.value = `${yyyy}-${mm}-${dd}`;
+        if ("vibrate" in navigator) navigator.vibrate([10]);
+      });
+
+      // Wire Add Similar button (only visible to owner)
+      if (isOwner || item.user_id === currentUser.id) {
+        const formMap = { 1: "form-atwood.html", 2: "form-horton.html", 3: "form-steelflame.html", 4: "form-zachwoods.html" };
+        const targetForm = formMap[item.maker_id];
+        if (targetForm) {
+          const p = new URLSearchParams({ prefill: "1" });
+          if (item.category_id)  p.set("category_id",  item.category_id);
+          if (item.material_id)  p.set("material_id",   item.material_id);
+          if (item.variant && item.variant !== "none") p.set("variant", item.variant);
+          if (item.size)         p.set("size",          item.size);
+          if (item.msrp)         p.set("msrp",          item.msrp);
+          if (item.extra)        p.set("extra",         item.extra);
+          if (item.is_private)   p.set("is_private",    "true");
+          const addSimilarBtn = document.getElementById("add-similar-btn");
+          addSimilarBtn.href = `${targetForm}?${p.toString()}`;
+          addSimilarBtn.style.display = "inline-flex";
+        }
+      }
       document.getElementById("edit-extra").value    = item.extra        || "";
       document.getElementById("edit-comments").value = item.comments     || "";
       document.getElementById("edit-private").checked = item.is_private  || false;

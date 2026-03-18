@@ -73,18 +73,20 @@
         <div class="thumb-strip" id="thumb-strip"></div>
       </div>
 
-      <!-- Privacy -->
+      <!-- Privacy + Add Similar -->
       <div class="field-group">
-        <label class="privacy-row" for="is-private">
-          <div class="privacy-info">
-            <div class="privacy-title">Private entry</div>
-            <div class="privacy-desc">Only visible to you</div>
-          </div>
-          <div class="toggle-wrap">
-            <input type="checkbox" id="is-private" />
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          </div>
-        </label>
+        <div class="privacy-actions">
+          <label class="privacy-row-inner" for="is-private">
+            <div class="privacy-info">
+              <div class="privacy-title">Private entry</div>
+              <div class="privacy-desc">Only visible to you</div>
+            </div>
+            <div class="toggle-wrap">
+              <input type="checkbox" id="is-private" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </div>
+          </label>
+        </div>
       </div>
 
       <button class="btn-primary" id="next-btn">Continue →</button>
@@ -112,8 +114,12 @@
       </div>
 
       <div class="field-group">
-        <label class="field-label" for="born-on">Born On Date</label>
-        <input type="date" class="field-input" id="born-on" />
+        <label class="field-label" for="born-on">Date Acquired</label>
+        <div class="date-wrap">
+          <input type="date" class="field-input" id="born-on" />
+          <button type="button" class="date-cal-btn" id="born-on-cal-btn" title="Open calendar" aria-label="Open calendar">📅</button>
+        </div>
+        <button type="button" class="date-today-btn" id="born-on-today-btn">⊕ Use today's date</button>
       </div>
 
       <div class="field-group">
@@ -146,7 +152,7 @@
   </div><!-- /.form-wrap -->
 
   <script type="module">
-    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft, initProgressiveUpload, saveItem, addNewLookup, loadChips } from "./form-shared.js";
+    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft, initProgressiveUpload, saveItem, addNewLookup, loadChips, initDatePicker, setToday, readPrefillParams, buildAddSimilarUrl } from "./form-shared.js";
 
     const MAKER_ID  = 1;
     const DRAFT_KEY = "draft_atwood";
@@ -216,6 +222,27 @@
           autosaveDraft();
         },
       });
+
+      // ── Date picker ──
+      initDatePicker("born-on", "born-on-cal-btn");
+      document.getElementById("born-on-today-btn").addEventListener("click", () => {
+        setToday("born-on");
+        haptic("light");
+      });
+
+      // ── Prefill from "Add Similar" URL params ──
+      const prefill = readPrefillParams();
+      if (prefill) {
+        if (prefill.category_id) { categoryChips.setSelected(prefill.category_id); selectedCategoryId = prefill.category_id; }
+        if (prefill.material_id) { materialChips.setSelected(prefill.material_id); selectedMaterialId = prefill.material_id; }
+        if (prefill.variant)  document.getElementById("variant").value  = prefill.variant;
+        if (prefill.size)     document.getElementById("size").value     = prefill.size;
+        if (prefill.msrp)     document.getElementById("msrp").value     = prefill.msrp;
+        if (prefill.extra)    document.getElementById("extra").value    = prefill.extra;
+        if (prefill.is_private) document.getElementById("is-private").checked = true;
+        haptic("light");
+        showToast("Fields carried over from similar item", "info");
+      }
 
       // ── Draft autosave ──
       function autosaveDraft() {

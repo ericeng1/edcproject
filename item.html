@@ -364,6 +364,28 @@
       color: #aaa;
     }
 
+    /* ── ADD SIMILAR BUTTON ── */
+    .add-similar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(141,187,209,0.35);
+      background: rgba(141,187,209,0.06);
+      color: var(--accent2);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+      margin-top: 10px;
+    }
+    .add-similar-btn:hover { border-color: var(--accent2); background: rgba(141,187,209,0.12); }
+
     /* ── LIGHTBOX ── */
     .lightbox {
       display: none;
@@ -453,6 +475,7 @@
         <div class="meta-title"    id="meta-brand"></div>
         <div class="meta-subtitle" id="meta-variant"></div>
         <div class="privacy-badge" id="privacy-badge"></div>
+        <a id="add-similar-btn" href="#" class="add-similar-btn" style="display:none;">⊕ Add Similar</a>
         <div class="data-grid"     id="data-grid"></div>
         <div class="comments-block" id="comments-block" style="display:none;">
           <div class="comments-label">Notes</div>
@@ -540,6 +563,23 @@
         editBtn.style.display = "inline-flex";
       }
 
+      // Add Similar button — available to all logged-in users (not just owner)
+      const formMap = { 1: "form-atwood.html", 2: "form-horton.html", 3: "form-steelflame.html", 4: "form-zachwoods.html" };
+      const targetForm = formMap[item.maker_id];
+      if (targetForm) {
+        const p = new URLSearchParams({ prefill: "1" });
+        if (item.category_id)  p.set("category_id",  item.category_id);
+        if (item.material_id)  p.set("material_id",   item.material_id);
+        if (item.variant && item.variant !== "none") p.set("variant", item.variant);
+        if (item.size)         p.set("size",          item.size);
+        if (item.msrp)         p.set("msrp",          item.msrp);
+        if (item.extra)        p.set("extra",         item.extra);
+        if (item.is_private)   p.set("is_private",    "true");
+        const addSimilarBtn = document.getElementById("add-similar-btn");
+        addSimilarBtn.href = `${targetForm}?${p.toString()}`;
+        addSimilarBtn.style.display = "inline-flex";
+      }
+
       // ── SHOW PAGE ──
       document.title = `${item.brands?.company || "Item"} — Showoffy`;
       document.getElementById("state-loading").style.display = "none";
@@ -591,7 +631,7 @@
       addCell("Material", item.materials?.name);
       addCell("Size",     item.size ? `${item.size}"` : null);
       addCell("MSRP",     item.msrp ? `$${parseFloat(item.msrp).toFixed(2)}` : null);
-      addCell("Born On",  item.born_on_date);
+      addCell("Date Acquired", item.born_on_date);
       addCell("Variant",  item.variant && item.variant !== "none" ? item.variant : null);
       addCell("Extra",    item.extra || null);
 
