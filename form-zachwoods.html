@@ -65,11 +65,13 @@
       <div class="field-group">
         <label class="field-label">Photos</label>
         <div class="photo-zone" id="photo-zone">
-          <input type="file" id="photo-input" accept="image/*" multiple capture="environment" />
           <div class="photo-zone-icon">📷</div>
           <div class="photo-zone-text">Tap to take or choose photos</div>
           <div class="photo-zone-hint">Up to 10 photos · Uploads instantly</div>
         </div>
+        <!-- Input is outside the zone so clicks don't bubble back up -->
+        <input type="file" id="photo-input" accept="image/*" multiple
+               style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
         <div class="thumb-strip" id="thumb-strip"></div>
       </div>
 
@@ -151,8 +153,10 @@
 
   </div><!-- /.form-wrap -->
 
-  <script type="module">
-    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft, initProgressiveUpload, saveItem, addNewLookup, loadChips, initDatePicker, setToday, readPrefillParams, buildAddSimilarUrl } from "./form-shared.js";
+    <script type="module">
+    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft,
+             initProgressiveUpload, saveItem, addNewLookup, loadChips,
+             initDatePicker, setToday, readPrefillParams } from "./form-shared.js";
 
     const MAKER_ID  = 4;
     const DRAFT_KEY = "draft_zachwoods";
@@ -167,10 +171,20 @@
         window.location.href = "login.html";
       });
 
-      // ── State ──
+      // ── Mutable state ──
       let selectedCategoryId = null;
       let selectedMaterialId = null;
       let uploadedUrls       = [];
+
+      // ── Draft autosave — defined early so callbacks below can reference it ──
+      function autosaveDraft() {
+        saveDraft(DRAFT_KEY, {
+          category_id:  selectedCategoryId,
+          material_id:  selectedMaterialId,
+          is_private:   document.getElementById("is-private").checked,
+          uploadedUrls,
+        });
+      }
 
       // ── Load chips dynamically from Supabase ──
       const categoryChips = await loadChips({
@@ -205,18 +219,24 @@
         autosaveDraft();
       });
 
-      // ── Progressive upload ──
+      // ── Progressive photo upload ──
+      // The input sits outside the photo-zone so clicks don't bubble back
       const photoInput = document.getElementById("photo-input");
       const thumbStrip = document.getElementById("thumb-strip");
       const photoZone  = document.getElementById("photo-zone");
 
-      photoZone.addEventListener("click", () => { photoInput.value = ""; photoInput.click(); });
+      // Use a label click approach to avoid mobile programmatic-click blocks
+      photoZone.addEventListener("click", (e) => {
+        // Don't re-trigger if click came from the input itself
+        if (e.target === photoInput) return;
+        photoInput.click();
+      });
 
       const uploader = initProgressiveUpload({
-        inputEl:     photoInput,
-        previewEl:   thumbStrip,
-        userId:      user.id,
-        draftKey:    DRAFT_KEY,
+        inputEl:      photoInput,
+        previewEl:    thumbStrip,
+        userId:       user.id,
+        draftKey:     DRAFT_KEY,
         onUrlsChange: (urls) => {
           uploadedUrls = urls;
           autosaveDraft();
@@ -235,30 +255,21 @@
       if (prefill) {
         if (prefill.category_id) { categoryChips.setSelected(prefill.category_id); selectedCategoryId = prefill.category_id; }
         if (prefill.material_id) { materialChips.setSelected(prefill.material_id); selectedMaterialId = prefill.material_id; }
-        if (prefill.variant)  document.getElementById("variant").value  = prefill.variant;
-        if (prefill.size)     document.getElementById("size").value     = prefill.size;
-        if (prefill.msrp)     document.getElementById("msrp").value     = prefill.msrp;
-        if (prefill.extra)    document.getElementById("extra").value    = prefill.extra;
-        if (prefill.is_private) document.getElementById("is-private").checked = true;
-        haptic("light");
+        if (prefill.variant)     document.getElementById("variant").value = prefill.variant;
+        if (prefill.size)        document.getElementById("size").value    = prefill.size;
+        if (prefill.msrp)        document.getElementById("msrp").value    = prefill.msrp;
+        if (prefill.extra)       document.getElementById("extra").value   = prefill.extra;
+        if (prefill.is_private)  document.getElementById("is-private").checked = true;
         showToast("Fields carried over from similar item", "info");
+        haptic("light");
       }
 
-      // ── Draft autosave ──
-      function autosaveDraft() {
-        saveDraft(DRAFT_KEY, {
-          category_id:  selectedCategoryId,
-          material_id:  selectedMaterialId,
-          is_private:   document.getElementById("is-private").checked,
-          uploadedUrls,
-        });
-      }
-
+      // ── Privacy toggle autosave ──
       document.getElementById("is-private").addEventListener("change", autosaveDraft);
 
-      // ── Draft restore (after chips are loaded) ──
+      // ── Draft restore (after chips are loaded so setSelected works) ──
       const draft = loadDraft(DRAFT_KEY);
-      if (draft) {
+      if (draft && !prefill) {  // Don't restore draft if Add Similar is active
         const banner = document.getElementById("draft-banner");
         banner.style.display = "flex";
 
@@ -306,16 +317,17 @@
 
       // ── Save ──
       async function doSave(withStep2) {
-        const saveBtn = document.getElementById(withStep2 ? "save-btn" : "save-skip-btn");
+        const btnId  = withStep2 ? "save-btn" : "save-skip-btn";
+        const saveBtn = document.getElementById(btnId);
         saveBtn.disabled = true;
 
         const step2 = withStep2 ? {
-          variant:      document.getElementById("variant").value.trim()   || null,
-          size:         document.getElementById("size").value             || null,
-          msrp:         document.getElementById("msrp").value             || null,
-          born_on_date: document.getElementById("born-on").value          || null,
-          extra:        document.getElementById("extra").value.trim()     || null,
-          comments:     document.getElementById("comments").value.trim()  || null,
+          variant:      document.getElementById("variant").value.trim()  || null,
+          size:         document.getElementById("size").value            || null,
+          msrp:         document.getElementById("msrp").value            || null,
+          born_on_date: document.getElementById("born-on").value         || null,
+          extra:        document.getElementById("extra").value.trim()    || null,
+          comments:     document.getElementById("comments").value.trim() || null,
         } : null;
 
         try {
@@ -345,8 +357,8 @@
         }
       }
 
-      document.getElementById("save-btn").addEventListener("click",      () => doSave(true));
-      document.getElementById("save-skip-btn").addEventListener("click", () => doSave(false));
+      document.getElementById("save-btn").addEventListener("click",       () => doSave(true));
+      document.getElementById("save-skip-btn").addEventListener("click",  () => doSave(false));
       document.getElementById("add-another-btn").addEventListener("click", () => window.location.reload());
 
     })();

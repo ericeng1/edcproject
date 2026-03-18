@@ -221,6 +221,9 @@ export function initProgressiveUpload({ inputEl, previewEl, userId, onUrlsChange
     }
   });
 
+  // Initial render — shows the add tile immediately on load
+  render();
+
   // Expose method to set initial urls (for draft restore)
   return {
     setUrls(initial) { urls = [...initial]; render(); onUrlsChange(urls); },
@@ -491,8 +494,8 @@ export async function loadChips({ table, containerId, addChipId, onSelect }) {
     chip.addEventListener("click", () => {
       container.querySelectorAll(".chip:not(.chip-add)").forEach(c => c.classList.remove("selected"));
       chip.classList.add("selected");
-      if (typeof haptic === "function") haptic("light");
-      onSelect(id);
+      haptic("light");
+      try { onSelect(id); } catch(e) { console.warn("loadChips onSelect error:", e); }
     });
     return chip;
   }
@@ -527,4 +530,83 @@ export async function loadChips({ table, containerId, addChipId, onSelect }) {
     },
     getAddChip() { return addChip; },
   };
+}
+
+// ── DATE PICKER HELPER ────────────────────────────────────────────────────────
+/**
+ * Attaches a calendar icon button to a date input that triggers the native
+ * date picker. Also injects a "Today" shortcut.
+ *
+ * @param {string} inputId   — id of the <input type="date"> element
+ * @param {string} btnId     — id of the calendar trigger button
+ */
+export function initDatePicker(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const btn   = document.getElementById(btnId);
+  if (!input || !btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    // showPicker() is the modern spec; fallback to focus+click
+    if (typeof input.showPicker === "function") {
+      try { input.showPicker(); return; } catch {}
+    }
+    input.focus();
+    input.click();
+  });
+}
+
+/**
+ * Sets a date input to today's local date (YYYY-MM-DD).
+ */
+export function setToday(inputId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm   = String(now.getMonth() + 1).padStart(2, "0");
+  const dd   = String(now.getDate()).padStart(2, "0");
+  input.value = `${yyyy}-${mm}-${dd}`;
+}
+
+// ── PREFILL FROM URL PARAMS ───────────────────────────────────────────────────
+/**
+ * Reads ?prefill=1&category_id=X&material_id=Y&variant=Z… from the URL
+ * and returns a prefill object (or null if no prefill param).
+ * Photos, comments, and born_on_date are intentionally excluded.
+ */
+export function readPrefillParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get("prefill")) return null;
+
+  return {
+    category_id:  params.get("category_id")  ? parseInt(params.get("category_id"))  : null,
+    material_id:  params.get("material_id")   ? parseInt(params.get("material_id"))  : null,
+    variant:      params.get("variant")       || null,
+    size:         params.get("size")          || null,
+    msrp:         params.get("msrp")          || null,
+    extra:        params.get("extra")         || null,
+    is_private:   params.get("is_private") === "true",
+  };
+}
+
+/**
+ * Builds an "Add Similar" URL for a given item, pointing to the correct
+ * brand form based on maker_id. Excludes photos, comments, born_on_date.
+ */
+export function buildAddSimilarUrl(item) {
+  const formMap = { 1: "form-atwood.html", 2: "form-horton.html", 3: "form-steelflame.html", 4: "form-zachwoods.html" };
+  const base = formMap[item.maker_id];
+  if (!base) return null;
+
+  const p = new URLSearchParams({ prefill: "1" });
+  if (item.category_id)  p.set("category_id",  item.category_id);
+  if (item.material_id)  p.set("material_id",   item.material_id);
+  if (item.variant && item.variant !== "none") p.set("variant", item.variant);
+  if (item.size)         p.set("size",          item.size);
+  if (item.msrp)         p.set("msrp",          item.msrp);
+  if (item.extra)        p.set("extra",         item.extra);
+  if (item.is_private)   p.set("is_private",    "true");
+
+  return `${base}?${p.toString()}`;
 }
