@@ -368,7 +368,10 @@
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { showStatus(error.message, "error"); setLoading(false); return; }
-      window.location.href = "dashboard.html";
+      // Restore any pending redirect (e.g. Add Similar from a public item page)
+      const pending = sessionStorage.getItem("auth_redirect");
+      if (pending) { sessionStorage.removeItem("auth_redirect"); window.location.href = pending; }
+      else window.location.href = "dashboard.html";
     }
 
     setLoading(false);

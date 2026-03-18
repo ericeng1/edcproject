@@ -17,7 +17,12 @@ const MAX_PHOTOS = 10;
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 export async function requireAuth() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) { window.location.href = "login.html"; return null; }
+  if (!session) {
+    // Preserve the full URL so prefill params survive the login round-trip
+    try { sessionStorage.setItem("auth_redirect", window.location.href); } catch {}
+    window.location.href = "login.html";
+    return null;
+  }
   return session.user;
 }
 

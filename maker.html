@@ -302,7 +302,8 @@
     </div>
     <div class="topbar-right">
       <span class="topbar-user" id="topbar-user"></span>
-      <a href="dashboard.html" class="btn-flat">+ Add Item</a>
+      <a href="login.html" class="btn-flat" id="signin-link" style="display:none;">Sign In</a>
+      <a href="dashboard.html" class="btn-flat" id="add-item-link" style="display:none;">+ Add Item</a>
       <button class="btn-flat" id="signout-btn" style="display:none;">Sign Out</button>
     </div>
   </header>
@@ -348,11 +349,14 @@
 
       if (session) {
         document.getElementById("topbar-user").textContent = session.user.email;
+        document.getElementById("add-item-link").style.display = "inline-flex";
         document.getElementById("signout-btn").style.display = "inline-flex";
         document.getElementById("signout-btn").addEventListener("click", async () => {
           await supabase.auth.signOut();
           window.location.href = "login.html";
         });
+      } else {
+        document.getElementById("signin-link").style.display = "inline-flex";
       }
 
       // ── GET MAKER ID FROM URL ──
