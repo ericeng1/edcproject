@@ -379,16 +379,14 @@
     <div class="feed-end"    id="feed-end">— End of feed —</div>
     <div class="sentinel"    id="sentinel"></div>
 
-    <!-- CTA: log an item for this maker -->
-    <div id="feed-cta" style="display:none;padding:40px 0 8px;text-align:center;">
-      <a id="feed-cta-link" href="dashboard.html"
+    <div id="maker-form-cta" style="display:none;padding:36px 0 8px;text-align:center;">
+      <a id="maker-form-link" href="dashboard.html"
          style="display:inline-flex;align-items:center;gap:8px;
                 padding:11px 24px;border-radius:8px;
-                border:1px solid var(--border);
-                color:var(--muted);font-family:var(--font-body);
-                font-size:12px;letter-spacing:0.08em;text-transform:uppercase;
+                border:1px solid var(--border);color:var(--muted);
+                font-family:var(--font-body);font-size:12px;
+                letter-spacing:0.08em;text-transform:uppercase;
                 text-decoration:none;transition:border-color .2s,color .2s;">
-        ＋ Log an item for this maker
       </a>
     </div>
   </div>
@@ -451,13 +449,10 @@
       // Point the empty-state link directly to this maker's form
       document.getElementById("empty-add-link").href = formUrl;
 
-      // Show the feed CTA and point it to the same form
-      const ctaEl   = document.getElementById("feed-cta");
-      const ctaLink = document.getElementById("feed-cta-link");
-      ctaEl.style.display  = "block";
-      ctaLink.href         = formUrl;
-
-      // Hover style via JS (simpler than adding a class)
+      // Wire the smart CTA link — text set later once we know if items exist
+      const ctaWrap = document.getElementById("maker-form-cta");
+      const ctaLink = document.getElementById("maker-form-link");
+      ctaLink.href = formUrl;
       ctaLink.addEventListener("mouseenter", () => {
         ctaLink.style.borderColor = "var(--accent)";
         ctaLink.style.color       = "var(--accent)";
@@ -499,8 +494,12 @@
           if (offset === 0) {
             document.getElementById("state-empty").classList.add("visible");
             document.getElementById("stat-count").textContent = "0";
+            // No CTA here — empty state already has the link
           } else {
             document.getElementById("feed-end").classList.add("visible");
+            // Items exist — show "Add another" CTA
+            ctaLink.textContent = "＋ Add another item for this maker";
+            ctaWrap.style.display = "block";
           }
           exhausted = true;
           return;
@@ -521,6 +520,8 @@
         if (items.length < PAGE_SIZE) {
           exhausted = true;
           document.getElementById("feed-end").classList.add("visible");
+          ctaLink.textContent = "＋ Add another item for this maker";
+          ctaWrap.style.display = "block";
         }
       }
 
