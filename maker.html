@@ -604,11 +604,9 @@
           const el = document.createElement("div");
           el.className = "feed-item-gs";
           el.style.animationDelay = "0.05s";
+          el.style.cursor = "pointer";
           el.addEventListener("click", () => {
-            // Open in lightbox
-            document.getElementById("gs-lightbox-img").src = shot.url;
-            document.getElementById("gs-lightbox").classList.add("open");
-            document.body.style.overflow = "hidden";
+            window.location.href = `group-shot.html?id=${shot.id}&maker=${makerId}`;
           });
 
           el.innerHTML = `
@@ -650,32 +648,7 @@
     })();
   </script>
 
-  <!-- Group shot lightbox -->
-  <div id="gs-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;"
-       onclick="this.classList.remove('open');this.style.display='none';document.body.style.overflow=''">
-    <button onclick="event.stopPropagation();document.getElementById('gs-lightbox').classList.remove('open');document.getElementById('gs-lightbox').style.display='none';document.body.style.overflow='';"
-            style="position:absolute;top:20px;right:24px;font-size:28px;color:var(--muted);cursor:pointer;background:none;border:none;">✕</button>
-    <img id="gs-lightbox-img" src="" alt="" style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:6px;" />
-  </div>
 
-  <script>
-    document.getElementById('gs-lightbox').addEventListener('click', function(e) {
-      if (e.target === this) { this.style.display = 'none'; document.body.style.overflow = ''; }
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') {
-        const lb = document.getElementById('gs-lightbox');
-        lb.style.display = 'none'; document.body.style.overflow = '';
-      }
-    });
-    // Override open to use display:flex
-    const origOpen = HTMLElement.prototype.classList;
-    const gsLb = document.getElementById('gs-lightbox');
-    const observer = new MutationObserver(() => {
-      if (gsLb.classList.contains('open')) gsLb.style.display = 'flex';
-    });
-    observer.observe(gsLb, { attributes: true, attributeFilter: ['class'] });
-  </script>
 
 </body>
 </html>

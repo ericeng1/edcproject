@@ -448,7 +448,7 @@
       overflow: hidden;
       background: var(--surface);
       border: 1px solid var(--border);
-      cursor: zoom-in;
+      cursor: pointer;
       transition: border-color 0.2s, transform 0.15s;
     }
 
@@ -1147,12 +1147,15 @@
         shots.forEach(shot => {
           const card = document.createElement("div");
           card.className = "gs-card";
+          card.style.cursor = "pointer";
+          card.addEventListener("click", () => {
+            window.location.href = `group-shot.html?id=${shot.id}&item=${gsItemId}`;
+          });
 
           const img = document.createElement("img");
           img.src     = shot.url;
           img.alt     = "";
           img.loading = "lazy";
-          img.addEventListener("click", () => window.openLightbox(shot.url));
           card.appendChild(img);
 
           const footer = document.createElement("div");
