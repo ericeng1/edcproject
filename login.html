@@ -371,7 +371,7 @@
       // Restore any pending redirect (e.g. Add Similar from a public item page)
       const pending = sessionStorage.getItem("auth_redirect");
       if (pending) { sessionStorage.removeItem("auth_redirect"); window.location.href = pending; }
-      else window.location.href = "dashboard.html";
+      else window.location.href = "home.html";
     }
 
     setLoading(false);
@@ -380,7 +380,7 @@
   window.handleOAuth = async function(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + "/dashboard.html" }
+      options: { redirectTo: window.location.origin + "/home.html" }
     });
     if (error) showStatus(error.message, "error");
   };
@@ -412,7 +412,7 @@
 
   // If already logged in, skip straight to app
   supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = "dashboard.html";
+    if (session) window.location.href = "home.html";
   });
 </script>
 
