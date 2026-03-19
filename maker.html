@@ -370,7 +370,7 @@
 
   <div class="state-page" id="state-empty">
     <p>No public items found for this maker yet.</p>
-    <p style="margin-top:14px;"><a href="dashboard.html">Be the first to add one →</a></p>
+    <p style="margin-top:14px;"><a id="empty-add-link" href="dashboard.html">Be the first to add one →</a></p>
   </div>
 
   <div class="feed-wrap">
@@ -378,6 +378,19 @@
     <div class="feed-loader" id="feed-loader">Loading…</div>
     <div class="feed-end"    id="feed-end">— End of feed —</div>
     <div class="sentinel"    id="sentinel"></div>
+
+    <!-- CTA: log an item for this maker -->
+    <div id="feed-cta" style="display:none;padding:40px 0 8px;text-align:center;">
+      <a id="feed-cta-link" href="dashboard.html"
+         style="display:inline-flex;align-items:center;gap:8px;
+                padding:11px 24px;border-radius:8px;
+                border:1px solid var(--border);
+                color:var(--muted);font-family:var(--font-body);
+                font-size:12px;letter-spacing:0.08em;text-transform:uppercase;
+                text-decoration:none;transition:border-color .2s,color .2s;">
+        ＋ Log an item for this maker
+      </a>
+    </div>
   </div>
 
   <script type="module">
@@ -425,6 +438,34 @@
       if (personName) { personEl.textContent = personName; }
       else            { personEl.style.display = "none"; }
       document.getElementById("maker-header").style.display = "block";
+
+      // ── Maker → form mapping ──
+      const FORM_MAP = {
+        1: "form-atwood.html",
+        2: "form-horton.html",
+        3: "form-steelflame.html",
+        4: "form-zachwoods.html",
+      };
+      const formUrl = FORM_MAP[parseInt(makerId)] || "dashboard.html";
+
+      // Point the empty-state link directly to this maker's form
+      document.getElementById("empty-add-link").href = formUrl;
+
+      // Show the feed CTA and point it to the same form
+      const ctaEl   = document.getElementById("feed-cta");
+      const ctaLink = document.getElementById("feed-cta-link");
+      ctaEl.style.display  = "block";
+      ctaLink.href         = formUrl;
+
+      // Hover style via JS (simpler than adding a class)
+      ctaLink.addEventListener("mouseenter", () => {
+        ctaLink.style.borderColor = "var(--accent)";
+        ctaLink.style.color       = "var(--accent)";
+      });
+      ctaLink.addEventListener("mouseleave", () => {
+        ctaLink.style.borderColor = "var(--border)";
+        ctaLink.style.color       = "var(--muted)";
+      });
 
       const PAGE_SIZE = 10;
       let offset    = 0;
