@@ -281,6 +281,43 @@
     .state-page a { color: var(--text); text-decoration: underline; }
 
     /* ── MOBILE ── */
+    /* ── GROUP SHOT FEED ENTRY ── */
+    .feed-item-gs {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+      cursor: zoom-in;
+      animation: slideIn 0.35s ease both;
+    }
+
+    .feed-item-gs:hover { background: rgba(0,0,0,0.02); }
+
+    .feed-gs-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      background: rgba(141,187,209,0.08);
+      border: 1px solid rgba(141,187,209,0.2);
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin-bottom: 10px;
+      width: fit-content;
+    }
+
+    .feed-gs-items-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
     @media (max-width: 620px) {
       .topbar { padding: 0 20px; }
       .maker-header, .feed { padding-left: 20px; padding-right: 20px; }
@@ -521,6 +558,76 @@
         });
       }
 
+      // ── LOAD GROUP SHOTS FOR THIS MAKER ──
+      // Shows group shots where at least one tagged item belongs to this maker
+      async function loadGroupShots() {
+        // Find all public items for this maker
+        const { data: makerItems } = await supabase
+          .from("items")
+          .select("id")
+          .eq("maker_id", makerId)
+          .eq("is_private", false)
+          .is("deleted_at", null);
+
+        if (!makerItems?.length) return;
+        const makerItemIds = makerItems.map(i => i.id);
+
+        // Find group_shot_ids that tag at least one of those items
+        const { data: links } = await supabase
+          .from("group_shot_items")
+          .select("group_shot_id, item_id")
+          .in("item_id", makerItemIds);
+
+        if (!links?.length) return;
+
+        const gsIds = [...new Set(links.map(l => l.group_shot_id))];
+        const { data: shots } = await supabase
+          .from("group_shots")
+          .select("id, url, created_at")
+          .in("id", gsIds)
+          .order("created_at", { ascending: false });
+
+        if (!shots?.length) return;
+
+        const feed = document.getElementById("feed");
+
+        // Insert a divider
+        const divider = document.createElement("div");
+        divider.style.cssText = "padding:28px 0 16px;border-bottom:1px solid var(--rule);margin-bottom:0;";
+        divider.innerHTML = `<div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);">Group Shots</div>`;
+        feed.appendChild(divider);
+
+        shots.forEach(shot => {
+          // How many maker items are tagged in this shot
+          const taggedCount = links.filter(l => l.group_shot_id === shot.id && makerItemIds.includes(l.item_id)).length;
+
+          const el = document.createElement("div");
+          el.className = "feed-item-gs";
+          el.style.animationDelay = "0.05s";
+          el.addEventListener("click", () => {
+            // Open in lightbox
+            document.getElementById("gs-lightbox-img").src = shot.url;
+            document.getElementById("gs-lightbox").classList.add("open");
+            document.body.style.overflow = "hidden";
+          });
+
+          el.innerHTML = `
+            <div class="feed-img-wrap">
+              <img src="${shot.url}" alt="" loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=feed-img-placeholder>◻</div>'" />
+            </div>
+            <div class="feed-meta">
+              <div class="feed-gs-badge">◎ Group Shot</div>
+              <div class="feed-date">${formatDate(shot.created_at)}</div>
+              <div class="feed-gs-items-label">${taggedCount} item${taggedCount !== 1 ? "s" : ""} from this maker</div>
+            </div>
+          `;
+          feed.appendChild(el);
+        });
+      }
+
+      await loadGroupShots();
+
       // ── INTERSECTION OBSERVER for lazy load ──
       const sentinel = document.getElementById("sentinel");
       const observer = new IntersectionObserver((entries) => {
@@ -541,6 +648,33 @@
       }, 500);
 
     })();
+  </script>
+
+  <!-- Group shot lightbox -->
+  <div id="gs-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:999;align-items:center;justify-content:center;cursor:zoom-out;"
+       onclick="this.classList.remove('open');this.style.display='none';document.body.style.overflow=''">
+    <button onclick="event.stopPropagation();document.getElementById('gs-lightbox').classList.remove('open');document.getElementById('gs-lightbox').style.display='none';document.body.style.overflow='';"
+            style="position:absolute;top:20px;right:24px;font-size:28px;color:var(--muted);cursor:pointer;background:none;border:none;">✕</button>
+    <img id="gs-lightbox-img" src="" alt="" style="max-width:92vw;max-height:92vh;object-fit:contain;border-radius:6px;" />
+  </div>
+
+  <script>
+    document.getElementById('gs-lightbox').addEventListener('click', function(e) {
+      if (e.target === this) { this.style.display = 'none'; document.body.style.overflow = ''; }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const lb = document.getElementById('gs-lightbox');
+        lb.style.display = 'none'; document.body.style.overflow = '';
+      }
+    });
+    // Override open to use display:flex
+    const origOpen = HTMLElement.prototype.classList;
+    const gsLb = document.getElementById('gs-lightbox');
+    const observer = new MutationObserver(() => {
+      if (gsLb.classList.contains('open')) gsLb.style.display = 'flex';
+    });
+    observer.observe(gsLb, { attributes: true, attributeFilter: ['class'] });
   </script>
 
 </body>

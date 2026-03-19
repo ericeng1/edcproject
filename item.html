@@ -386,6 +386,277 @@
     }
     .add-similar-btn:hover { border-color: var(--accent2); background: rgba(141,187,209,0.12); }
 
+    /* ── GROUP SHOTS SECTION ── */
+    .group-shots-section {
+      max-width: 1080px;
+      margin: 0 auto 60px;
+      padding: 0 40px;
+    }
+
+    .gs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .gs-title {
+      font-family: var(--font-primary);
+      font-size: 22px;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
+    .gs-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    .btn-add-gs {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-add-gs:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,150,74,0.06); }
+
+    .gs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .gs-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .gs-card:hover { border-color: #444; transform: translateY(-2px); }
+
+    .gs-card img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .gs-card:hover img { transform: scale(1.03); }
+
+    .gs-card-footer {
+      padding: 10px 14px;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .gs-delete-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .gs-delete-btn:hover { color: var(--danger); background: rgba(192,80,80,0.1); }
+
+    .gs-empty {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--muted);
+      font-size: 14px;
+      font-family: var(--font-accent);
+      font-style: italic;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+    }
+
+    /* Upload panel */
+    .gs-upload-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .gs-upload-panel.open { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .gs-upload-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .gs-drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      margin-bottom: 16px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .gs-drop-zone:hover { border-color: var(--accent); background: rgba(200,150,74,0.03); }
+    .gs-drop-zone .dz-icon { font-size: 24px; margin-bottom: 6px; color: var(--muted); }
+    .gs-drop-zone .dz-text { font-size: 13px; color: var(--muted); }
+
+    .gs-preview-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+
+    .gs-preview-wrap img {
+      max-height: 200px;
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .gs-clear-preview {
+      position: absolute;
+      top: 6px; right: 6px;
+      width: 22px; height: 22px;
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Item tag selector */
+    .gs-tag-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .gs-item-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .gs-item-chip {
+      padding: 7px 14px;
+      border-radius: 40px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .gs-item-chip.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(200,150,74,0.08);
+    }
+
+    .gs-item-chip.current-item {
+      border-color: rgba(141,187,209,0.4);
+      color: var(--accent2);
+      background: rgba(141,187,209,0.06);
+      cursor: default;
+    }
+
+    .gs-upload-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-gs-submit {
+      padding: 12px 20px;
+      background: var(--accent);
+      color: #111;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-gs-submit:hover { opacity: 0.88; }
+    .btn-gs-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-gs-cancel {
+      padding: 12px 16px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-gs-cancel:hover { border-color: var(--muted); color: var(--text); }
+
+    @media (max-width: 780px) {
+      .group-shots-section { padding: 0 20px; }
+      .gs-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+
     /* ── LIGHTBOX ── */
     .lightbox {
       display: none;
@@ -484,6 +755,41 @@
       </div>
 
     </div>
+  </div>
+
+  <!-- ── GROUP SHOTS SECTION ── -->
+  <div class="group-shots-section" id="group-shots-section" style="display:none;">
+
+    <div class="gs-header">
+      <div>
+        <div class="gs-title">Group Shots</div>
+        <div class="gs-subtitle">Photos containing this item alongside others</div>
+      </div>
+      <button class="btn-add-gs" id="btn-open-gs-upload" style="display:none;">＋ Add Group Shot</button>
+    </div>
+
+    <!-- Upload panel (hidden until button clicked) -->
+    <div class="gs-upload-panel" id="gs-upload-panel">
+      <label class="gs-upload-label">Photo</label>
+      <div class="gs-drop-zone" id="gs-drop-zone">
+        <div class="dz-icon">📷</div>
+        <div class="dz-text">Tap to select a group photo</div>
+      </div>
+      <input type="file" id="gs-file-input" accept="image/*" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;" />
+      <div id="gs-preview-container"></div>
+
+      <label class="gs-tag-label">Items in this photo <span style="color:var(--muted);font-weight:300;text-transform:none;letter-spacing:0;">(tap to tag)</span></label>
+      <div class="gs-item-list" id="gs-item-list"></div>
+
+      <div class="gs-upload-actions">
+        <button class="btn-gs-submit" id="btn-gs-submit" disabled>Save Group Shot</button>
+        <button class="btn-gs-cancel" id="btn-gs-cancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Group shots grid -->
+    <div id="gs-grid-container"></div>
+
   </div>
 
   <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -788,6 +1094,246 @@
     document.addEventListener("keydown", e => {
       if (e.key === "Escape") window.closeLightbox();
     });
+
+    // ── GROUP SHOTS ──────────────────────────────────────────────────────────
+    (async () => {
+      // Re-read session — may have changed since page load
+      const { data: { session: gsSess } } = await supabase.auth.getSession();
+      const gsUserId  = gsSess?.user?.id ?? null;
+      const gsItemId  = new URLSearchParams(window.location.search).get("id");
+      if (!gsItemId) return;
+
+      const section    = document.getElementById("group-shots-section");
+      const gridCont   = document.getElementById("gs-grid-container");
+      const uploadBtn  = document.getElementById("btn-open-gs-upload");
+      const uploadPanel = document.getElementById("gs-upload-panel");
+      const dropZone   = document.getElementById("gs-drop-zone");
+      const fileInput  = document.getElementById("gs-file-input");
+      const previewCont = document.getElementById("gs-preview-container");
+      const itemList   = document.getElementById("gs-item-list");
+      const submitBtn  = document.getElementById("btn-gs-submit");
+      const cancelBtn  = document.getElementById("btn-gs-cancel");
+
+      let gsPendingFile = null;
+      let gsTaggedIds   = new Set([parseInt(gsItemId)]); // current item pre-tagged
+
+      section.style.display = "block";
+
+      // ── Load and render group shots for this item ──
+      async function loadGroupShots() {
+        const { data: links } = await supabase
+          .from("group_shot_items")
+          .select("group_shot_id")
+          .eq("item_id", gsItemId);
+
+        if (!links?.length) {
+          gridCont.innerHTML = '<div class="gs-empty">No group shots yet — add one to show this item with others.</div>';
+          return;
+        }
+
+        const ids = links.map(l => l.group_shot_id);
+        const { data: shots } = await supabase
+          .from("group_shots")
+          .select("id, url, created_at, user_id")
+          .in("id", ids)
+          .order("created_at", { ascending: false });
+
+        if (!shots?.length) { gridCont.innerHTML = ""; return; }
+
+        gridCont.innerHTML = "";
+        const grid = document.createElement("div");
+        grid.className = "gs-grid";
+
+        shots.forEach(shot => {
+          const card = document.createElement("div");
+          card.className = "gs-card";
+
+          const img = document.createElement("img");
+          img.src     = shot.url;
+          img.alt     = "";
+          img.loading = "lazy";
+          img.addEventListener("click", () => window.openLightbox(shot.url));
+          card.appendChild(img);
+
+          const footer = document.createElement("div");
+          footer.className = "gs-card-footer";
+          footer.innerHTML = `<span>${new Date(shot.created_at).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" })}</span>`;
+
+          // Delete button for owner
+          if (gsUserId && shot.user_id === gsUserId) {
+            const delBtn = document.createElement("button");
+            delBtn.className = "gs-delete-btn";
+            delBtn.title     = "Delete group shot";
+            delBtn.innerHTML = "⊘";
+            delBtn.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              const ok = await showGsConfirm();
+              if (!ok) return;
+              await supabase.from("group_shots").delete().eq("id", shot.id);
+              loadGroupShots();
+            });
+            footer.appendChild(delBtn);
+          }
+
+          card.appendChild(footer);
+          grid.appendChild(card);
+        });
+
+        gridCont.appendChild(grid);
+      }
+
+      await loadGroupShots();
+
+      // Show upload button for logged-in owners of the current item
+      // (we check user_id against currentItem via the isOwner flag set in main IIFE)
+      if (gsUserId) {
+        uploadBtn.style.display = "inline-flex";
+      }
+
+      // ── Upload panel toggle ──
+      uploadBtn.addEventListener("click", async () => {
+        uploadPanel.classList.toggle("open");
+        if (uploadPanel.classList.contains("open")) await loadItemChips();
+      });
+
+      cancelBtn.addEventListener("click", () => {
+        uploadPanel.classList.remove("open");
+        resetUploadPanel();
+      });
+
+      // ── File selection ──
+      dropZone.addEventListener("click", () => { fileInput.value = ""; fileInput.click(); });
+      fileInput.addEventListener("change", () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        gsPendingFile = file;
+        previewCont.innerHTML = "";
+        const wrap = document.createElement("div");
+        wrap.className = "gs-preview-wrap";
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        const clr = document.createElement("button");
+        clr.className = "gs-clear-preview";
+        clr.innerHTML = "✕";
+        clr.addEventListener("click", () => { gsPendingFile = null; previewCont.innerHTML = ""; submitBtn.disabled = true; });
+        wrap.appendChild(img);
+        wrap.appendChild(clr);
+        previewCont.appendChild(wrap);
+        submitBtn.disabled = false;
+      });
+
+      // ── Load owner's items as tag chips ──
+      async function loadItemChips() {
+        if (!gsUserId) return;
+        itemList.innerHTML = '<span style="font-size:13px;color:var(--muted)">Loading your items…</span>';
+
+        const { data: items } = await supabase
+          .from("items")
+          .select("id, variant, maker_id, categories(name), brands(company)")
+          .eq("user_id", gsUserId)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false });
+
+        itemList.innerHTML = "";
+        (items || []).forEach(it => {
+          const label = [it.brands?.company, it.categories?.name, it.variant].filter(Boolean).join(" · ");
+          const chip  = document.createElement("div");
+          chip.className   = parseInt(it.id) === parseInt(gsItemId)
+            ? "gs-item-chip current-item selected"
+            : "gs-item-chip" + (gsTaggedIds.has(it.id) ? " selected" : "");
+          chip.textContent = label || `Item #${it.id}`;
+          chip.dataset.id  = it.id;
+
+          if (parseInt(it.id) !== parseInt(gsItemId)) {
+            chip.addEventListener("click", () => {
+              if (gsTaggedIds.has(it.id)) {
+                gsTaggedIds.delete(it.id);
+                chip.classList.remove("selected");
+              } else {
+                gsTaggedIds.add(it.id);
+                chip.classList.add("selected");
+              }
+            });
+          }
+          itemList.appendChild(chip);
+        });
+      }
+
+      // ── Submit group shot ──
+      submitBtn.addEventListener("click", async () => {
+        if (!gsPendingFile || !gsUserId) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Uploading…";
+
+        try {
+          // Upload to Storage
+          const ext  = gsPendingFile.name.split(".").pop();
+          const path = `${gsUserId}/group-shots/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("item-images")
+            .upload(path, gsPendingFile, { cacheControl: "3600", upsert: false });
+          if (upErr) throw upErr;
+          const { data: urlData } = supabase.storage.from("item-images").getPublicUrl(path);
+
+          // Insert group_shots row
+          const { data: gs, error: gsErr } = await supabase
+            .from("group_shots")
+            .insert([{ user_id: gsUserId, url: urlData.publicUrl }])
+            .select()
+            .single();
+          if (gsErr) throw gsErr;
+
+          // Insert junction rows for all tagged items
+          const tagRows = Array.from(gsTaggedIds).map(itemId => ({
+            group_shot_id: gs.id,
+            item_id: itemId,
+          }));
+          const { error: tagErr } = await supabase.from("group_shot_items").insert(tagRows);
+          if (tagErr) throw tagErr;
+
+          uploadPanel.classList.remove("open");
+          resetUploadPanel();
+          await loadGroupShots();
+
+        } catch (err) {
+          alert("Upload failed: " + err.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Save Group Shot";
+        }
+      });
+
+      function resetUploadPanel() {
+        gsPendingFile = null;
+        gsTaggedIds   = new Set([parseInt(gsItemId)]);
+        previewCont.innerHTML = "";
+        itemList.innerHTML    = "";
+        submitBtn.disabled    = true;
+        submitBtn.textContent = "Save Group Shot";
+        fileInput.value       = "";
+      }
+
+      // Simple confirm for delete
+      function showGsConfirm() {
+        return new Promise(resolve => {
+          const overlay = document.createElement("div");
+          overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10000;display:flex;align-items:flex-end;justify-content:center;padding-bottom:env(safe-area-inset-bottom)";
+          overlay.innerHTML = `<div style="background:#1e1e22;border:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px 24px 32px;width:100%;max-width:520px;">
+            <div style="font-family:var(--font-primary);font-size:22px;letter-spacing:.06em;margin-bottom:8px;">Delete Group Shot</div>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:24px;">This group shot will be permanently removed.</p>
+            <div style="display:flex;gap:10px;">
+              <button id="gs-cancel-del" style="flex:1;padding:14px;border-radius:10px;background:none;border:1px solid var(--border);color:var(--muted);font-family:var(--font-body);font-size:15px;cursor:pointer;">Cancel</button>
+              <button id="gs-confirm-del" style="flex:2;padding:14px;border-radius:10px;background:var(--danger);border:none;color:#fff;font-family:var(--font-body);font-size:15px;font-weight:700;cursor:pointer;">Delete</button>
+            </div>
+          </div>`;
+          document.body.appendChild(overlay);
+          const close = v => { overlay.style.opacity="0"; overlay.style.transition="opacity .18s"; setTimeout(()=>overlay.remove(),180); resolve(v); };
+          overlay.querySelector("#gs-cancel-del").onclick  = () => close(false);
+          overlay.querySelector("#gs-confirm-del").onclick = () => close(true);
+          overlay.addEventListener("click", e => { if(e.target===overlay) close(false); });
+        });
+      }
+
+    })();
   </script>
 
 </body>
