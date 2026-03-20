@@ -499,7 +499,7 @@
           .order("created_at", { ascending: false })
           .range(offset, offset + PAGE_SIZE - 1);
 
-        if (currentUserId) query = query.neq("user_id", currentUserId);
+        // No exclusion filter — owner's own items appear in the maker feed
 
         const { data: items, error } = await query;
         document.getElementById("feed-loader").classList.remove("visible");

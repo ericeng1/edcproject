@@ -135,24 +135,6 @@ export function showToast(msg, type = "info") {
   }, type === "success" ? 3000 : 2200);
 }
 
-// ── DRAFT SAVE / RESTORE ──────────────────────────────────────────────────────
-export function saveDraft(draftKey, data) {
-  try {
-    localStorage.setItem(draftKey, JSON.stringify({ ...data, _saved: Date.now() }));
-  } catch {}
-}
-
-export function loadDraft(draftKey) {
-  try {
-    const raw = localStorage.getItem(draftKey);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-
-export function clearDraft(draftKey) {
-  try { localStorage.removeItem(draftKey); } catch {}
-}
-
 // ── PROGRESSIVE UPLOAD ────────────────────────────────────────────────────────
 /**
  * Uploads a single file immediately on selection.
@@ -181,9 +163,8 @@ export async function uploadFileNow(file, userId) {
  *   previewEl    — container div for thumbnails
  *   userId       — current user id
  *   onUrlsChange — callback(urls: string[]) called whenever url list changes
- *   draftKey     — key for auto-saving upload urls to localStorage
  */
-export function initProgressiveUpload({ inputEl, previewEl, userId, onUrlsChange, draftKey }) {
+export function initProgressiveUpload({ inputEl, previewEl, userId, onUrlsChange }) {
   let urls = []; // uploaded public URLs in order
 
   function render() {
@@ -257,10 +238,7 @@ export function initProgressiveUpload({ inputEl, previewEl, userId, onUrlsChange
         urls.push(url);
         onUrlsChange(urls);
         // Save urls to draft immediately
-        if (draftKey) {
-          const existing = loadDraft(draftKey) || {};
-          saveDraft(draftKey, { ...existing, uploadedUrls: urls });
-        }
+  
         haptic("success");
         showToast("Photo uploaded ✓", "success");
       } catch (err) {

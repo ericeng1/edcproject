@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+  <script>
+    (function() {
+      var t = localStorage.getItem("showoffy_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Zach Woods Knives — Add Item</title>
@@ -43,11 +49,6 @@
       <div class="section-heading">The essentials</div>
       <p class="section-sub">Category, material, and photos — that's all we need.</p>
 
-      <!-- Draft restore banner -->
-      <div class="draft-banner" id="draft-banner" style="display:none;">
-        <span class="draft-banner-text">📋 Draft restored</span>
-        <button class="draft-banner-discard" id="discard-draft">Discard</button>
-      </div>
 
       <!-- Category -->
       <div class="field-group">
@@ -153,14 +154,14 @@
 
   </div><!-- /.form-wrap -->
 
-    <script type="module">
-    import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft,
+      <script type="module">
+    import { requireAuth, haptic, showToast,
              initProgressiveUpload, saveItem, addNewLookup, loadChips,
              initDatePicker, setToday, readPrefillParams,
              CATEGORY_MATERIAL_DEFAULTS } from "./form-shared.js";
+    import "./theme.js";
 
-    const MAKER_ID  = 4;
-    const DRAFT_KEY = "draft_zachwoods";
+    const MAKER_ID = 4;
 
     (async () => {
       const user = await requireAuth();
@@ -173,31 +174,24 @@
       });
 
       // ── Mutable state ──
-      let selectedCategoryId    = null;
-      let selectedMaterialId    = null;
-      let uploadedUrls           = [];
-      let materialPickedByUser   = false; // true once user manually taps a material chip
+      let selectedCategoryId  = null;
+      let selectedMaterialId  = null;
+      let materialPickedByUser = false;
 
-      // ── Draft autosave — defined early so callbacks below can reference it ──
-      function autosaveDraft() {
-        saveDraft(DRAFT_KEY, {
-          category_id:  selectedCategoryId,
-          material_id:  selectedMaterialId,
-          is_private:   document.getElementById("is-private").checked,
-          uploadedUrls,
-        });
-      }
+      // Restore any previously uploaded photo URLs from localStorage
+      // (only URLs are persisted — no text fields, no chip selections)
+      const PHOTO_KEY = "photos_zachwoods";
+      let uploadedUrls = (() => {
+        try { return JSON.parse(localStorage.getItem(PHOTO_KEY) || "[]"); }
+        catch { return []; }
+      })();
 
       // ── Load chips dynamically from Supabase ──
-      // Load both chip groups first, then wire the cross-chip default logic
       const categoryChips = await loadChips({
         table:       "categories",
         containerId: "category-chips",
         addChipId:   "add-category-chip",
-        onSelect:    id => {
-          selectedCategoryId = id;
-          autosaveDraft();
-        },
+        onSelect:    id => { selectedCategoryId = id; },
       });
 
       const materialChips = await loadChips({
@@ -207,22 +201,19 @@
         onSelect:    id => {
           selectedMaterialId   = id;
           materialPickedByUser = true;
-          autosaveDraft();
         },
       });
 
       // ── Wire material default after BOTH chip groups are loaded ──
-      // Patch categoryChips to also apply the material soft-default on selection
       const catContainer = document.getElementById("category-chips");
       catContainer.querySelectorAll(".chip:not(.chip-add)").forEach(chip => {
         chip.addEventListener("click", () => {
-          if (materialPickedByUser) return; // user already chose — don't override
+          if (materialPickedByUser) return;
           const catId    = parseInt(chip.dataset.id);
           const defaults = CATEGORY_MATERIAL_DEFAULTS[catId];
           if (defaults?.length) {
             materialChips.setSelected(defaults[0]);
             selectedMaterialId = defaults[0];
-            autosaveDraft();
           }
         });
       });
@@ -233,7 +224,6 @@
         if (!result) return;
         categoryChips.addAndSelect(result.id, result.name);
         selectedCategoryId = result.id;
-        autosaveDraft();
       });
 
       // ── Add new material ──
@@ -242,18 +232,14 @@
         if (!result) return;
         materialChips.addAndSelect(result.id, result.name);
         selectedMaterialId = result.id;
-        autosaveDraft();
       });
 
       // ── Progressive photo upload ──
-      // The input sits outside the photo-zone so clicks don't bubble back
       const photoInput = document.getElementById("photo-input");
       const thumbStrip = document.getElementById("thumb-strip");
       const photoZone  = document.getElementById("photo-zone");
 
-      // Use a label click approach to avoid mobile programmatic-click blocks
       photoZone.addEventListener("click", (e) => {
-        // Don't re-trigger if click came from the input itself
         if (e.target === photoInput) return;
         photoInput.click();
       });
@@ -262,12 +248,14 @@
         inputEl:      photoInput,
         previewEl:    thumbStrip,
         userId:       user.id,
-        draftKey:     DRAFT_KEY,
         onUrlsChange: (urls) => {
           uploadedUrls = urls;
-          autosaveDraft();
+          try { localStorage.setItem(PHOTO_KEY, JSON.stringify(urls)); } catch {}
         },
       });
+
+      // Restore previously uploaded photos into the thumb strip
+      if (uploadedUrls.length) uploader.setUrls(uploadedUrls);
 
       // ── Date picker ──
       initDatePicker("born-on", "born-on-cal-btn");
@@ -280,11 +268,7 @@
       const prefill = readPrefillParams();
       if (prefill) {
         if (prefill.category_id) { categoryChips.setSelected(prefill.category_id); selectedCategoryId = prefill.category_id; }
-        if (prefill.material_id) {
-          materialChips.setSelected(prefill.material_id);
-          selectedMaterialId  = prefill.material_id;
-          materialPickedByUser = true;
-        }
+        if (prefill.material_id) { materialChips.setSelected(prefill.material_id); selectedMaterialId = prefill.material_id; materialPickedByUser = true; }
         if (prefill.variant)     document.getElementById("variant").value = prefill.variant;
         if (prefill.size)        document.getElementById("size").value    = prefill.size;
         if (prefill.msrp)        document.getElementById("msrp").value    = prefill.msrp;
@@ -292,39 +276,6 @@
         if (prefill.is_private)  document.getElementById("is-private").checked = true;
         showToast("Fields carried over from similar item", "info");
         haptic("light");
-      }
-
-      // ── Privacy toggle autosave ──
-      document.getElementById("is-private").addEventListener("change", autosaveDraft);
-
-      // ── Draft restore (after chips are loaded so setSelected works) ──
-      const draft = loadDraft(DRAFT_KEY);
-      if (draft && !prefill) {  // Don't restore draft if Add Similar is active
-        const banner = document.getElementById("draft-banner");
-        banner.style.display = "flex";
-
-        if (draft.category_id) { categoryChips.setSelected(draft.category_id); selectedCategoryId = draft.category_id; }
-        if (draft.material_id) {
-          materialChips.setSelected(draft.material_id);
-          selectedMaterialId  = draft.material_id;
-          materialPickedByUser = true; // treat restored draft as a deliberate choice
-        }
-        if (draft.is_private)  document.getElementById("is-private").checked = true;
-        if (draft.uploadedUrls?.length) uploader.setUrls(draft.uploadedUrls);
-
-        document.getElementById("discard-draft").addEventListener("click", () => {
-          clearDraft(DRAFT_KEY);
-          banner.style.display = "none";
-          selectedCategoryId = null;
-          selectedMaterialId = null;
-          uploadedUrls = [];
-          uploader.setUrls([]);
-          categoryChips.setSelected(null);
-          materialChips.setSelected(null);
-          document.getElementById("is-private").checked = false;
-          haptic("light");
-          showToast("Draft discarded", "info");
-        });
       }
 
       // ── Step navigation ──
@@ -351,7 +302,7 @@
 
       // ── Save ──
       async function doSave(withStep2) {
-        const btnId  = withStep2 ? "save-btn" : "save-skip-btn";
+        const btnId   = withStep2 ? "save-btn" : "save-skip-btn";
         const saveBtn = document.getElementById(btnId);
         saveBtn.disabled = true;
 
@@ -374,11 +325,10 @@
             step2,
           });
 
-          clearDraft(DRAFT_KEY);
           haptic("success");
-
+          try { localStorage.removeItem(PHOTO_KEY); } catch {}
           document.querySelector(".step-indicator").style.display = "none";
-          document.querySelector(".brand-hero").style.display = "none";
+          document.querySelector(".brand-hero").style.display     = "none";
           document.getElementById("step-1").classList.remove("active");
           document.getElementById("step-2").classList.remove("active");
           document.getElementById("success-state").classList.add("visible");
