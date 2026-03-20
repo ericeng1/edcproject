@@ -379,15 +379,10 @@
     <div class="feed-end"    id="feed-end">— End of feed —</div>
     <div class="sentinel"    id="sentinel"></div>
 
-    <div id="maker-form-cta" style="display:none;padding:36px 0 8px;text-align:center;">
-      <a id="maker-form-link" href="dashboard.html"
-         style="display:inline-flex;align-items:center;gap:8px;
-                padding:11px 24px;border-radius:8px;
-                border:1px solid var(--border);color:var(--muted);
-                font-family:var(--font-body);font-size:12px;
-                letter-spacing:0.08em;text-transform:uppercase;
-                text-decoration:none;transition:border-color .2s,color .2s;">
-      </a>
+    <div id="maker-form-cta" style="display:none;text-align:center;padding-top:14px;">
+      <p><a id="maker-form-link" href="dashboard.html"
+            style="color:var(--accent);text-decoration:none;font-style:normal;">
+      </a></p>
     </div>
   </div>
 
@@ -453,14 +448,7 @@
       const ctaWrap = document.getElementById("maker-form-cta");
       const ctaLink = document.getElementById("maker-form-link");
       ctaLink.href = formUrl;
-      ctaLink.addEventListener("mouseenter", () => {
-        ctaLink.style.borderColor = "var(--accent)";
-        ctaLink.style.color       = "var(--accent)";
-      });
-      ctaLink.addEventListener("mouseleave", () => {
-        ctaLink.style.borderColor = "var(--border)";
-        ctaLink.style.color       = "var(--muted)";
-      });
+
 
       const PAGE_SIZE = 10;
       let offset    = 0;
