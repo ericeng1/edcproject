@@ -234,6 +234,13 @@
       color: var(--accent);
     }
 
+    .status-msg.info {
+      display: block;
+      background: rgba(141,187,209,0.08);
+      border: 1px solid rgba(141,187,209,0.25);
+      color: #8dbbd1;
+    }
+
     .switch-text {
       text-align: center;
       font-size: 13px;
@@ -359,7 +366,7 @@
   function showStatus(msg, type) {
     const el = document.getElementById("status");
     el.textContent = msg;
-    el.className   = "status-msg " + (type === "error" ? "error" : type === "success" ? "success" : "");
+    el.className   = "status-msg " + (type === "error" ? "error" : type === "success" ? "success" : type === "info" ? "info" : "");
     el.style.display = "block";
   }
 
@@ -409,7 +416,24 @@
     if (currentTab === "signup") {
       const { error } = await supabase.auth.signUp({ email, password });
       setLoading(false);
-      if (error) { showStatus(error.message, "error"); return; }
+      if (error) {
+        // Supabase returns this specific message when the email is already registered
+        const alreadyExists = error.message.toLowerCase().includes("already registered")
+                           || error.message.toLowerCase().includes("already exists")
+                           || error.message.toLowerCase().includes("user already");
+        if (alreadyExists) {
+          showStatus("An account with that email already exists. Switching you to Sign In…", "info");
+          setTimeout(() => {
+            switchTab("signin");
+            // Pre-fill the password field so they just need to hit Sign In
+            clearStatus();
+            showStatus("Account found — enter your password to sign in.", "info");
+          }, 1800);
+        } else {
+          showStatus(error.message, "error");
+        }
+        return;
+      }
       showStatus("Account created! Check your email to confirm your address.", "success");
 
     } else {
