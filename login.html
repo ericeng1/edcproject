@@ -266,6 +266,25 @@
     @media (max-width: 480px) {
       .card { padding: 32px 24px 28px; }
     }
+
+    .forgot-link {
+      display: block;
+      text-align: center;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #888;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 0;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      font-family: inherit;
+      transition: color 0.2s;
+      width: 100%;
+    }
+    .forgot-link:hover { color: #c8964a; }
+
   </style>
 </head>
 <body>
@@ -299,16 +318,7 @@
     </div>
 
     <button class="btn-primary" id="submit-btn" onclick="handleEmailAuth()">Sign In</button>
-    <div style="text-align:center;margin-top:14px;">
-      <button type="button" id="forgot-btn"
-        style="background:none;border:none;font-family:var(--font-body);font-size:13px;
-               color:var(--muted);cursor:pointer;letter-spacing:0.04em;padding:4px 0;
-               transition:color .2s;text-decoration:underline;text-decoration-style:dotted;"
-        onmouseover="this.style.color='var(--accent)'"
-        onmouseout="this.style.color='var(--muted)'">
-        Forgot password?
-      </button>
-    </div>
+    <button type="button" id="forgot-btn" class="forgot-link">Forgot password?</button>
   </div>
 
   <div class="status-msg" id="status"></div>
@@ -350,7 +360,8 @@
 
     document.getElementById("tab-signin").classList.toggle("active", !isSignup);
     document.getElementById("tab-signup").classList.toggle("active", isSignup);
-    document.getElementById("field-confirm").style.display = isSignup ? "block" : "none";
+    document.getElementById("field-confirm").style.display  = isSignup ? "block" : "none";
+    document.getElementById("forgot-btn").style.display    = isSignup ? "none"  : "block";
     document.getElementById("submit-btn").textContent = isSignup ? "Create Account" : "Sign In";
     document.getElementById("switch-text").innerHTML = isSignup
       ? `Already have an account? <a onclick="switchTab('signin')">Sign in</a>`

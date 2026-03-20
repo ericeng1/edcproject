@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+  <script>
+    (function() {
+      var t = localStorage.getItem("showoffy_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Edit Item — Showoffy</title>
@@ -534,6 +540,24 @@
       .page-header, .edit-form { padding-left: 16px; padding-right: 16px; }
       .field-row { grid-template-columns: 1fr; }
     }
+
+    /* ── LIGHT THEME OVERRIDES ── */
+    [data-theme="light"] {
+      --bg:       #f4f1ec;
+      --surface:  #ffffff;
+      --surface2: #ebe8e2;
+      --border:   #d6d1c8;
+      --text:     #1c1a17;
+      --muted:    #7a7570;
+      --accent:   #b07d32;
+      --accent2:  #4a8ba8;
+      --danger:   #a03830;
+      --input-bg: #f4f1ec;
+    }
+
+    html { transition: background 0.25s; }
+    body { transition: background 0.25s, color 0.25s; }
+    .topbar { transition: background 0.25s, border-color 0.25s; }
   </style>
 </head>
 <body>
@@ -648,6 +672,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
+    import { syncThemeFromUser } from "./theme.js";
     import { addNewLookup } from "./form-shared.js";
 
     const IMG_COLS  = ["image_url1","image_url2","image_url3","image_url4","image_url5",
@@ -841,6 +866,7 @@
     // ── INIT ──
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      syncThemeFromUser(session?.user?.user_metadata);
       if (!session) { window.location.href = "login.html"; return; }
       currentUser = session.user;
 

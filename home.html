@@ -709,7 +709,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     const PAGE_SIZE = 12;
     let   offset    = 0;
@@ -719,6 +719,7 @@
 
     // ── AUTH ──────────────────────────────────────────────────────────────────
     const { data: { session } } = await supabase.auth.getSession();
+      syncThemeFromUser(session?.user?.user_metadata);
     const isLoggedIn = !!session;
     currentUserId = session?.user?.id ?? null;
 

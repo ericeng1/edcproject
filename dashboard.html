@@ -345,10 +345,11 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      syncThemeFromUser(session?.user?.user_metadata);
       if (!session) { window.location.href = "login.html"; return; }
 
       const emailEl = document.getElementById("user-email");

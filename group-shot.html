@@ -630,7 +630,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     // ── HELPERS ──
     let toastTimer = null;
@@ -696,6 +696,7 @@
     (async () => {
       // Auth (optional — page is public for public group shots)
       const { data: { session } } = await supabase.auth.getSession();
+      syncThemeFromUser(session?.user?.user_metadata);
       const currentUserId = session?.user?.id ?? null;
       const isLoggedIn    = !!session;
 

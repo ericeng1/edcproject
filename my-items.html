@@ -415,13 +415,14 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     // Wrap everything in an async IIFE so errors surface visibly
     (async () => {
 
       // ── AUTH GATE ──
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      syncThemeFromUser(session?.user?.user_metadata);
 
       if (sessionError || !session) {
         window.location.href = "login.html";
