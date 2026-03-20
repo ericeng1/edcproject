@@ -159,13 +159,14 @@
              initProgressiveUpload, saveItem, addNewLookup, loadChips,
              initDatePicker, setToday, readPrefillParams,
              CATEGORY_MATERIAL_DEFAULTS } from "./form-shared.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     const MAKER_ID = 1;
 
     (async () => {
       const user = await requireAuth();
       if (!user) return;
+      syncThemeFromUser(user.user_metadata);
 
       document.getElementById("signout-btn").addEventListener("click", async () => {
         const { supabase } = await import("./supabaseClient.js");

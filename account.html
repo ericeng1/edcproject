@@ -297,59 +297,6 @@
 
     .toggle-wrap input:checked ~ .toggle-track .toggle-thumb { transform: translateX(22px); }
 
-    /* ── DEFAULT VISIBILITY SELECTOR ── */
-    .visibility-opts {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .vis-opt {
-      position: relative;
-    }
-
-    .vis-opt input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-      margin: 0;
-    }
-
-    .vis-opt-label {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 5px;
-      padding: 14px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      text-align: center;
-    }
-
-    .vis-opt input:checked + .vis-opt-label {
-      border-color: var(--accent);
-      background: rgba(200,150,74,0.06);
-    }
-
-    .vis-opt-icon { font-size: 18px; }
-
-    .vis-opt-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .vis-opt-desc {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.03em;
-    }
 
     /* ── CONNECTED ACCOUNTS ── */
     .provider-row {
@@ -519,32 +466,7 @@
         </div>
       </div>
 
-      <!-- Default collection visibility -->
-      <div class="field" style="margin-top:20px;border-top:1px solid var(--border);padding-top:18px;">
-        <label class="field-label">Default Item Visibility</label>
-        <div class="visibility-opts">
-          <div class="vis-opt">
-            <input type="radio" name="default-vis" id="vis-public" value="public" />
-            <label class="vis-opt-label" for="vis-public">
-              <span class="vis-opt-icon">🌐</span>
-              <span class="vis-opt-name">Public</span>
-              <span class="vis-opt-desc">Visible to everyone</span>
-            </label>
-          </div>
-          <div class="vis-opt">
-            <input type="radio" name="default-vis" id="vis-private" value="private" />
-            <label class="vis-opt-label" for="vis-private">
-              <span class="vis-opt-icon">🔒</span>
-              <span class="vis-opt-name">Private</span>
-              <span class="vis-opt-desc">Only visible to you</span>
-            </label>
-          </div>
-        </div>
-        <div class="field-hint" style="margin-top:8px;">
-          Pre-fills the privacy toggle when you log a new item. You can always change it per item.
-        </div>
-        <button class="btn-primary" id="btn-save-prefs" style="margin-top:14px;">Save Preferences</button>
-      </div>
+
     </div>
 
     <!-- ── CONNECTED ACCOUNTS ── -->
@@ -609,32 +531,39 @@
     document.getElementById("page-sub").textContent =
       user.user_metadata?.display_name || user.email || "Settings & preferences";
 
-    // ── THEME TOGGLE ──
+    // ── THEME TOGGLE — per-user, saved to Supabase user_metadata ──
+    // On load: prefer user_metadata.theme, fall back to localStorage
     const themeToggle = document.getElementById("theme-toggle");
     const themeLabel  = document.getElementById("theme-label");
 
+    // Read the user's saved theme preference (user_metadata wins over localStorage)
+    const userTheme = user.user_metadata?.theme || null;
+    if (userTheme) {
+      setTheme(userTheme); // also updates localStorage + html attribute
+    }
+
     function syncToggle() {
       const isDark = getTheme() === "dark";
-      themeToggle.checked     = isDark;
-      themeLabel.textContent  = isDark ? "Dark mode" : "Light mode";
+      themeToggle.checked    = isDark;
+      themeLabel.textContent = isDark ? "Dark mode" : "Light mode";
     }
 
     syncToggle();
 
-    themeToggle.addEventListener("change", () => {
-      setTheme(themeToggle.checked ? "dark" : "light");
+    themeToggle.addEventListener("change", async () => {
+      const chosen = themeToggle.checked ? "dark" : "light";
+      setTheme(chosen); // apply immediately + write to localStorage
       themeLabel.textContent = themeToggle.checked ? "Dark mode" : "Light mode";
+
+      // Persist to Supabase user_metadata so it follows the user across devices
+      const { error } = await supabase.auth.updateUser({ data: { theme: chosen } });
+      if (error) {
+        toast("Theme saved locally — couldn't sync to account: " + error.message, "info");
+      }
+      // No success toast needed — the page visibly changes as confirmation
     });
 
-    // ── DEFAULT VISIBILITY ──
-    const savedVis = localStorage.getItem("showoffy_default_vis") || "private";
-    document.getElementById(savedVis === "public" ? "vis-public" : "vis-private").checked = true;
 
-    document.getElementById("btn-save-prefs").addEventListener("click", () => {
-      const vis = document.querySelector('input[name="default-vis"]:checked')?.value || "private";
-      localStorage.setItem("showoffy_default_vis", vis);
-      toast("Preferences saved ✓", "success");
-    });
 
     // ── SAVE IDENTITY ──
     document.getElementById("btn-save-identity").addEventListener("click", async () => {

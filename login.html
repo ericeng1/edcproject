@@ -299,6 +299,16 @@
     </div>
 
     <button class="btn-primary" id="submit-btn" onclick="handleEmailAuth()">Sign In</button>
+    <div style="text-align:center;margin-top:14px;">
+      <button type="button" id="forgot-btn"
+        style="background:none;border:none;font-family:var(--font-body);font-size:13px;
+               color:var(--muted);cursor:pointer;letter-spacing:0.04em;padding:4px 0;
+               transition:color .2s;text-decoration:underline;text-decoration-style:dotted;"
+        onmouseover="this.style.color='var(--accent)'"
+        onmouseout="this.style.color='var(--muted)'">
+        Forgot password?
+      </button>
+    </div>
   </div>
 
   <div class="status-msg" id="status"></div>
