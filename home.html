@@ -892,7 +892,9 @@
         .range(offset, offset + PAGE_SIZE - 1);
 
       // Logged-in users: exclude their own items so the feed is discovery-oriented
-      if (currentUserId) query = query.neq("owner_id", currentUserId);
+      // Exclude the current user's own items from the discovery feed.
+      // Use 'or' to handle NULL owner_id rows correctly (neq alone skips NULLs in Postgres).
+      if (currentUserId) query = query.or(`owner_id.neq.${currentUserId},owner_id.is.null`);
 
       const { data: items, error } = await query;
 

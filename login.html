@@ -372,6 +372,30 @@
       const pending = sessionStorage.getItem("auth_redirect");
       if (pending) { sessionStorage.removeItem("auth_redirect"); window.location.href = pending; }
       else window.location.href = "home.html";
+
+    // ── FORGOT PASSWORD ──
+    document.getElementById("forgot-btn").addEventListener("click", async () => {
+      const emailVal = document.getElementById("email").value.trim();
+      if (!emailVal) {
+        showStatus("Enter your email address above first", "error");
+        document.getElementById("email").focus();
+        return;
+      }
+      const forgotBtn = document.getElementById("forgot-btn");
+      forgotBtn.disabled = true;
+      forgotBtn.textContent = "Sending…";
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(emailVal, {
+        redirectTo: window.location.origin + "/reset-password.html",
+      });
+      if (resetErr) {
+        showStatus("Could not send reset email: " + resetErr.message, "error");
+        forgotBtn.disabled    = false;
+        forgotBtn.textContent = "Forgot password?";
+      } else {
+        showStatus("Check your email — a reset link is on its way.", "success");
+        forgotBtn.textContent = "Email sent ✓";
+      }
+    });
     }
 
     setLoading(false);

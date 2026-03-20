@@ -293,6 +293,8 @@ export async function saveItem({ makerId, step1, step2, imageUrls, userId }) {
 
   const item = {
     user_id:      userId,
+    creator_id:   userId,   // Phase 1: who created the record — never changes
+    owner_id:     userId,   // Phase 1: current owner — updated by transactions later
     maker_id:     makerId,
     is_private:   step1.is_private || false,
     category_id:  step1.category_id || null,
