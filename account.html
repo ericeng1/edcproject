@@ -521,7 +521,8 @@
     // ── AUTH GATE ──
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) { window.location.href = "login.html"; }
-    const user = session.user;
+    // Use getUser() to get fresh user_metadata (getSession returns cached data)
+    const { data: { user } } = await supabase.auth.getUser();
 
     // ── POPULATE FIELDS ──
     document.getElementById("email-display").value =

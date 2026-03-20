@@ -349,7 +349,10 @@
 
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      syncThemeFromUser(session?.user?.user_metadata);
+      // Fetch fresh user_metadata from server so theme preference is always current
+      supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+        syncThemeFromUser(freshUser?.user_metadata);
+      });
       if (!session) { window.location.href = "login.html"; return; }
 
       const emailEl = document.getElementById("user-email");

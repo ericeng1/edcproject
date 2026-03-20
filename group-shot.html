@@ -696,7 +696,10 @@
     (async () => {
       // Auth (optional — page is public for public group shots)
       const { data: { session } } = await supabase.auth.getSession();
-      syncThemeFromUser(session?.user?.user_metadata);
+      // Fetch fresh user_metadata from server so theme preference is always current
+      supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+        syncThemeFromUser(freshUser?.user_metadata);
+      });
       const currentUserId = session?.user?.id ?? null;
       const isLoggedIn    = !!session;
 

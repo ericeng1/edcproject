@@ -350,115 +350,126 @@
 </div>
 
 <script type="module">
-  import { supabase } from "./supabaseClient.js";
+  import { supabase }          from "./supabaseClient.js";
+  import { syncThemeFromUser } from "./theme.js";
 
   let currentTab = "signin";
 
+  // ── UTILITY ──────────────────────────────────────────────────────────────────
+  function showStatus(msg, type) {
+    const el = document.getElementById("status");
+    el.textContent = msg;
+    el.className   = "status-msg " + (type === "error" ? "error" : type === "success" ? "success" : "");
+    el.style.display = "block";
+  }
+
+  function clearStatus() {
+    const el = document.getElementById("status");
+    el.textContent   = "";
+    el.style.display = "none";
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById("submit-btn");
+    btn.disabled  = loading;
+    btn.innerHTML = loading
+      ? `<span class="spinner"></span> Working…`
+      : currentTab === "signup" ? "Create Account" : "Sign In";
+  }
+
+  // ── TAB SWITCH ───────────────────────────────────────────────────────────────
   window.switchTab = function(tab) {
     currentTab = tab;
     const isSignup = tab === "signup";
 
     document.getElementById("tab-signin").classList.toggle("active", !isSignup);
-    document.getElementById("tab-signup").classList.toggle("active", isSignup);
-    document.getElementById("field-confirm").style.display  = isSignup ? "block" : "none";
+    document.getElementById("tab-signup").classList.toggle("active",  isSignup);
+    document.getElementById("field-confirm").style.display = isSignup ? "block" : "none";
     document.getElementById("forgot-btn").style.display    = isSignup ? "none"  : "block";
-    document.getElementById("submit-btn").textContent = isSignup ? "Create Account" : "Sign In";
-    document.getElementById("switch-text").innerHTML = isSignup
+    document.getElementById("submit-btn").textContent      = isSignup ? "Create Account" : "Sign In";
+    document.getElementById("switch-text").innerHTML       = isSignup
       ? `Already have an account? <a onclick="switchTab('signin')">Sign in</a>`
       : `Don't have an account? <a onclick="switchTab('signup')">Create one</a>`;
 
     clearStatus();
   };
 
+  // ── EMAIL / PASSWORD AUTH ────────────────────────────────────────────────────
   window.handleEmailAuth = async function() {
     const email    = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
     const confirm  = document.getElementById("confirm").value;
-    const btn      = document.getElementById("submit-btn");
 
-    if (!email || !password) return showStatus("Please enter your email and password.", "error");
-    if (currentTab === "signup" && password !== confirm) return showStatus("Passwords do not match.", "error");
-    if (currentTab === "signup" && password.length < 6) return showStatus("Password must be at least 6 characters.", "error");
+    if (!email || !password) { showStatus("Please enter your email and password.", "error"); return; }
+    if (currentTab === "signup" && password !== confirm) { showStatus("Passwords do not match.", "error"); return; }
+    if (currentTab === "signup" && password.length < 6)  { showStatus("Password must be at least 6 characters.", "error"); return; }
 
     setLoading(true);
 
     if (currentTab === "signup") {
       const { error } = await supabase.auth.signUp({ email, password });
-      if (error) { showStatus(error.message, "error"); setLoading(false); return; }
+      setLoading(false);
+      if (error) { showStatus(error.message, "error"); return; }
       showStatus("Account created! Check your email to confirm your address.", "success");
+
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) { showStatus(error.message, "error"); setLoading(false); return; }
-      // Restore any pending redirect (e.g. Add Similar from a public item page)
+      if (error) { setLoading(false); showStatus(error.message, "error"); return; }
+
+      // Fetch fresh user_metadata and sync theme before navigating
+      const { data: { user: signedInUser } } = await supabase.auth.getUser();
+      syncThemeFromUser(signedInUser?.user_metadata);
+
       const pending = sessionStorage.getItem("auth_redirect");
       if (pending) { sessionStorage.removeItem("auth_redirect"); window.location.href = pending; }
       else window.location.href = "home.html";
-
-    // ── FORGOT PASSWORD ──
-    document.getElementById("forgot-btn").addEventListener("click", async () => {
-      const emailVal = document.getElementById("email").value.trim();
-      if (!emailVal) {
-        showStatus("Enter your email address above first", "error");
-        document.getElementById("email").focus();
-        return;
-      }
-      const forgotBtn = document.getElementById("forgot-btn");
-      forgotBtn.disabled = true;
-      forgotBtn.textContent = "Sending…";
-      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(emailVal, {
-        redirectTo: window.location.origin + "/reset-password.html",
-      });
-      if (resetErr) {
-        showStatus("Could not send reset email: " + resetErr.message, "error");
-        forgotBtn.disabled    = false;
-        forgotBtn.textContent = "Forgot password?";
-      } else {
-        showStatus("Check your email — a reset link is on its way.", "success");
-        forgotBtn.textContent = "Email sent ✓";
-      }
-    });
     }
-
-    setLoading(false);
   };
 
+  // ── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+  document.getElementById("forgot-btn").addEventListener("click", async () => {
+    const emailVal  = document.getElementById("email").value.trim();
+    const forgotBtn = document.getElementById("forgot-btn");
+
+    if (!emailVal) {
+      showStatus("Enter your email address above first.", "error");
+      document.getElementById("email").focus();
+      return;
+    }
+
+    forgotBtn.disabled    = true;
+    forgotBtn.textContent = "Sending…";
+
+    const { error } = await supabase.auth.resetPasswordForEmail(emailVal, {
+      redirectTo: window.location.origin + "/reset-password.html",
+    });
+
+    if (error) {
+      showStatus("Could not send reset email: " + error.message, "error");
+      forgotBtn.disabled    = false;
+      forgotBtn.textContent = "Forgot password?";
+    } else {
+      showStatus("Check your email — a reset link is on its way.", "success");
+      forgotBtn.textContent = "Email sent ✓";
+    }
+  });
+
+  // ── OAUTH ────────────────────────────────────────────────────────────────────
   window.handleOAuth = async function(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + "/home.html" }
+      options: { redirectTo: window.location.origin + "/home.html" },
     });
     if (error) showStatus(error.message, "error");
   };
 
-  function setLoading(loading) {
-    const btn = document.getElementById("submit-btn");
-    btn.disabled = loading;
-    btn.innerHTML = loading
-      ? `<span class="spinner"></span> Working...`
-      : currentTab === "signup" ? "Create Account" : "Sign In";
+  // ── REDIRECT ALREADY-LOGGED-IN USERS ────────────────────────────────────────
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    const { data: { user: existingUser } } = await supabase.auth.getUser();
+    syncThemeFromUser(existingUser?.user_metadata);
+    window.location.href = "home.html";
   }
-
-  function showStatus(msg, type) {
-    const el = document.getElementById("status");
-    el.textContent = msg;
-    el.className = `status-msg ${type}`;
-  }
-
-  function clearStatus() {
-    const el = document.getElementById("status");
-    el.className = "status-msg";
-    el.textContent = "";
-  }
-
-  // Allow Enter key to submit
-  document.addEventListener("keydown", e => {
-    if (e.key === "Enter") handleEmailAuth();
-  });
-
-  // If already logged in, skip straight to app
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.href = "home.html";
-  });
 </script>
 
 </body>
