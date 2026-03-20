@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+  <script>
+    (function() {
+      var t = localStorage.getItem("showoffy_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Group Shot — Showoffy</title>
@@ -525,6 +531,24 @@
       .gs-top  { grid-template-columns: 1fr; gap: 28px; }
       .topbar-email { display: none; }
     }
+
+    /* ── LIGHT THEME OVERRIDES ── */
+    [data-theme="light"] {
+      --bg:       #f4f1ec;
+      --surface:  #ffffff;
+      --surface2: #ebe8e2;
+      --border:   #d6d1c8;
+      --text:     #1c1a17;
+      --muted:    #7a7570;
+      --accent:   #b07d32;
+      --accent2:  #4a8ba8;
+      --danger:   #a03830;
+      --input-bg: #f4f1ec;
+    }
+
+    html { transition: background 0.25s; }
+    body { transition: background 0.25s, color 0.25s; }
+    .topbar { transition: background 0.25s, border-color 0.25s; }
   </style>
 </head>
 <body>
@@ -606,6 +630,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
+    import "./theme.js";
 
     // ── HELPERS ──
     let toastTimer = null;
@@ -675,7 +700,11 @@
       const isLoggedIn    = !!session;
 
       if (isLoggedIn) {
-        document.getElementById("user-email").textContent = session.user.email;
+        const emailEl = document.getElementById("user-email");
+        const displayName = session.user.user_metadata?.display_name;
+        emailEl.innerHTML = `<a href="account.html" style="color:var(--muted);text-decoration:none;transition:color .2s;"
+          onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"
+          >${displayName || session.user.email}</a>`;
         document.getElementById("signout-btn").style.display = "inline-flex";
         document.getElementById("signout-btn").addEventListener("click", async () => {
           await supabase.auth.signOut();

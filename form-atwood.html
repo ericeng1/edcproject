@@ -1,6 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
+  <script>
+    (function() {
+      var t = localStorage.getItem("showoffy_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Atwood Knife and Tool — Add Item</title>
@@ -154,6 +160,7 @@
   </div><!-- /.form-wrap -->
 
     <script type="module">
+    import "./theme.js";
     import { requireAuth, haptic, showToast, saveDraft, loadDraft, clearDraft,
              initProgressiveUpload, saveItem, addNewLookup, loadChips,
              initDatePicker, setToday, readPrefillParams,
