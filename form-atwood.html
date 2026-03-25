@@ -166,7 +166,10 @@
     (async () => {
       const user = await requireAuth();
       if (!user) return;
-      syncThemeFromUser(user.user_metadata);
+      // Fetch fresh user_metadata from server so theme preference is always current
+      supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+        syncThemeFromUser(freshUser?.user_metadata);
+      });
 
       document.getElementById("signout-btn").addEventListener("click", async () => {
         const { supabase } = await import("./supabaseClient.js");
@@ -193,6 +196,7 @@
         containerId: "category-chips",
         addChipId:   "add-category-chip",
         onSelect:    id => { selectedCategoryId = id; },
+        brandId:     1,   // brand-scoped: only show categories for this maker
       });
 
       const materialChips = await loadChips({
@@ -221,7 +225,7 @@
 
       // ── Add new category ──
       categoryChips.getAddChip().addEventListener("click", async () => {
-        const result = await addNewLookup("categories");
+        const result = await addNewLookup("categories", 1);
         if (!result) return;
         categoryChips.addAndSelect(result.id, result.name);
         selectedCategoryId = result.id;

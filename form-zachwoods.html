@@ -159,13 +159,17 @@
              initProgressiveUpload, saveItem, addNewLookup, loadChips,
              initDatePicker, setToday, readPrefillParams,
              CATEGORY_MATERIAL_DEFAULTS } from "./form-shared.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     const MAKER_ID = 4;
 
     (async () => {
       const user = await requireAuth();
       if (!user) return;
+      // Fetch fresh user_metadata from server so theme preference is always current
+      supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+        syncThemeFromUser(freshUser?.user_metadata);
+      });
 
       document.getElementById("signout-btn").addEventListener("click", async () => {
         const { supabase } = await import("./supabaseClient.js");
@@ -192,6 +196,7 @@
         containerId: "category-chips",
         addChipId:   "add-category-chip",
         onSelect:    id => { selectedCategoryId = id; },
+        brandId:     4,   // brand-scoped: only show categories for this maker
       });
 
       const materialChips = await loadChips({
@@ -220,7 +225,7 @@
 
       // ── Add new category ──
       categoryChips.getAddChip().addEventListener("click", async () => {
-        const result = await addNewLookup("categories");
+        const result = await addNewLookup("categories", 4);
         if (!result) return;
         categoryChips.addAndSelect(result.id, result.name);
         selectedCategoryId = result.id;
