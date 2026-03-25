@@ -889,6 +889,7 @@
         .select("*")
         .eq("id", itemId)
         .eq("user_id", currentUser.id)
+        .is("deleted_at", null)
         .single();
 
       document.getElementById("state-loading").style.display = "none";

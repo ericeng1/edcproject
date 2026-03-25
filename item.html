@@ -823,7 +823,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import "./theme.js";
+    import { syncThemeFromUser } from "./theme.js";
 
     const IMG_COLS = ["image_url1","image_url2","image_url3","image_url4","image_url5",
                       "image_url6","image_url7","image_url8","image_url9","image_url10"];
@@ -852,6 +852,10 @@
       // ── AUTH — optional for public items ──
       const { data: { session } } = await supabase.auth.getSession();
       const isLoggedIn = !!session;
+      if (isLoggedIn) // Fetch fresh user_metadata from server so theme preference is always current
+      supabase.auth.getUser().then(({ data: { user: freshUser } }) => {
+        syncThemeFromUser(freshUser?.user_metadata);
+      });
 
       if (isLoggedIn) {
         currentUserId = session.user.id;
@@ -882,7 +886,7 @@
         .from("items")
         .select(`
           id, maker_id, user_id, category_id, material_id,
-          variant, size, msrp, born_on_date,
+          variant, size, msrp, born_on_date, deleted_at,
           image_url1, image_url2, image_url3, image_url4, image_url5,
           image_url6, image_url7, image_url8, image_url9, image_url10,
           is_private, comments, extra,
@@ -895,6 +899,12 @@
 
       if (error || !item) {
         showError(error?.message || "Item not found or you don't have access.");
+        return;
+      }
+
+      // If item is soft-deleted, only the owner may view it
+      if (item.deleted_at && item.user_id !== currentUser?.id) {
+        showError("This item is no longer available.");
         return;
       }
 
