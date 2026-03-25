@@ -1,29 +1,18 @@
-# ── CREDENTIALS — never commit these ────────────────────────────────────────
-supabaseClient.js
-.env
-.env.local
-.env.production
-.env.*
-
-# ── OS & EDITOR JUNK ─────────────────────────────────────────────────────────
-.DS_Store
-.DS_Store?
-._*
-Thumbs.db
-Desktop.ini
-
-# ── EDITOR CONFIG ────────────────────────────────────────────────────────────
-.vscode/settings.json
-.idea/
-*.swp
-*.swo
-*~
-
-# ── LOGS ─────────────────────────────────────────────────────────────────────
-*.log
-npm-debug.log*
-
-# ── NODE (if you ever add a build step) ──────────────────────────────────────
+# Node
 node_modules/
+
+# Environment variables (API keys, secrets)
+.env
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log
+
+# Build folders
 dist/
-.cache/
+build/
+
+# VS Code settings (optional)
+.vscode/
