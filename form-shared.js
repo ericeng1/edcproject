@@ -571,25 +571,43 @@ export async function addNewLookup(table, brandId = null) {
  *
  * @returns the selected id (updated via closure), and a setter for draft restore.
  */
-export async function loadChips({ table, containerId, addChipId, onSelect }) {
+export async function loadChips({ table, containerId, addChipId, onSelect, brandId = null }) {
   const container = document.getElementById(containerId);
 
-  // Show a subtle loading state
   container.innerHTML = `<span style="font-size:13px;color:var(--muted,#737278);letter-spacing:0.04em;">Loading…</span>`;
 
-  const { data, error } = await supabase
-    .from(table)
-    .select("id, name")
-    .order("name");
+  let rows;
 
-  if (error) {
-    container.innerHTML = `<span style="font-size:13px;color:#c07070;">Failed to load — reload page</span>`;
-    return { getSelected: () => null, setSelected: () => {} };
+  if (brandId && table === "categories") {
+    // Brand-scoped: fetch only this brand's categories in defined sort order
+    const { data, error } = await supabase
+      .from("brand_categories")
+      .select("sort_order, categories ( id, name )")
+      .eq("brand_id", brandId)
+      .order("sort_order");
+
+    if (error) {
+      container.innerHTML = `<span style="font-size:13px;color:#c07070;">Failed to load — reload page</span>`;
+      return { getSelected: () => null, setSelected: () => {}, addAndSelect: () => {}, getAddChip: () => null };
+    }
+    // Flatten nested join: { sort_order, categories: { id, name } } → { id, name }
+    rows = (data || []).map(r => ({ id: r.categories.id, name: r.categories.name }));
+  } else {
+    // Global fallback: all rows alphabetically (materials, or categories without brandId)
+    const { data, error } = await supabase
+      .from(table)
+      .select("id, name")
+      .order("name");
+
+    if (error) {
+      container.innerHTML = `<span style="font-size:13px;color:#c07070;">Failed to load — reload page</span>`;
+      return { getSelected: () => null, setSelected: () => {}, addAndSelect: () => {}, getAddChip: () => null };
+    }
+    rows = data || [];
   }
 
   container.innerHTML = "";
 
-  // Render a chip and wire its click handler
   function renderChip(id, name) {
     const chip = document.createElement("div");
     chip.className = "chip";
@@ -604,16 +622,14 @@ export async function loadChips({ table, containerId, addChipId, onSelect }) {
     return chip;
   }
 
-  data.forEach(row => container.appendChild(renderChip(row.id, row.name)));
+  rows.forEach(row => container.appendChild(renderChip(row.id, row.name)));
 
-  // "+ Add" chip at the end
   const addChip = document.createElement("div");
   addChip.className = "chip chip-add";
   addChip.id = addChipId;
   addChip.textContent = "＋ Add";
   container.appendChild(addChip);
 
-  // Return helpers for draft restore and external new-chip injection
   return {
     getSelected() {
       const sel = container.querySelector(".chip.selected:not(.chip-add)");
@@ -625,7 +641,14 @@ export async function loadChips({ table, containerId, addChipId, onSelect }) {
       });
     },
     addAndSelect(id, name) {
-      // Insert new chip before the add chip
+      // If chip already rendered (exact-match reuse), just select it
+      const existing = container.querySelector(`.chip[data-id="${id}"]`);
+      if (existing) {
+        container.querySelectorAll(".chip:not(.chip-add)").forEach(c => c.classList.remove("selected"));
+        existing.classList.add("selected");
+        onSelect(id);
+        return;
+      }
       const newChip = renderChip(id, name);
       container.insertBefore(newChip, addChip);
       container.querySelectorAll(".chip:not(.chip-add)").forEach(c => c.classList.remove("selected"));
@@ -635,6 +658,7 @@ export async function loadChips({ table, containerId, addChipId, onSelect }) {
     getAddChip() { return addChip; },
   };
 }
+
 
 // ── DATE PICKER HELPER ────────────────────────────────────────────────────────
 /**
