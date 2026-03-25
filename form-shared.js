@@ -456,11 +456,11 @@ export function showConfirmDialog({ title, message, inputLabel = null, inputPlac
  *
  * @param {string} table  — "categories" or "materials"
  */
-export async function addNewLookup(table, brandId = null) {
+export async function addNewLookup(table) {
   const label = table === "categories" ? "Category" : "Material";
 
-  // Fetch all existing entries for duplicate + similarity check
-  const { data: existing } = await supabase.from(table).select("id, name");
+  // Fetch existing names for similarity check
+  const { data: existing } = await supabase.from(table).select("name");
   const existingNames = (existing || []).map(r => r.name);
 
   const name = await showConfirmDialog({
@@ -472,91 +472,45 @@ export async function addNewLookup(table, brandId = null) {
     cancelText:       "Cancel",
   });
 
-  if (!name) return null; // user cancelled
+  if (!name) return null;  // user cancelled
 
-  const trimmedName = name.trim();
-
-  // ── Exact duplicate check (case-insensitive) ────────────────────────────
-  // If the entry already exists, reuse it silently — no error, no insert.
-  const exactMatch = (existing || []).find(
-    r => r.name.trim().toLowerCase() === trimmedName.toLowerCase()
-  );
-
-  if (exactMatch) {
-    showToast(`"${exactMatch.name}" already exists — adding to this brand ✓`, "info");
-    haptic("light");
-    // If brand-scoped categories, link this existing entry to the brand if not already linked
-    if (table === "categories" && brandId) {
-      await supabase
-        .from("brand_categories")
-        .upsert({ brand_id: brandId, category_id: exactMatch.id },
-                 { onConflict: "brand_id,category_id" });
-    }
-    return { id: exactMatch.id, name: exactMatch.name };
-  }
-
-  // ── Fuzzy similarity check (no exact match found) ──────────────────────
-  const similar = findSimilar(trimmedName, existingNames, 2);
+  // ── Fuzzy similarity check ──
+  const similar = findSimilar(name, existingNames, 2);
   if (similar) {
+    // Build a warning dialog — user can still proceed or go back to select existing
     const proceed = await showConfirmDialog({
       title:       "Similar entry exists",
-      message:     `"${similar}" already exists and looks very similar. Are you sure "${trimmedName}" is a different ${label.toLowerCase()}?`,
-      confirmText: `Yes, add "${trimmedName}"`,
+      message:     `"${similar}" already exists and looks very similar. Are you sure "${name}" is a different ${label.toLowerCase()}?`,
+      confirmText: `Yes, add "${name}"`,
       cancelText:  `Use "${similar}" instead`,
     });
     if (!proceed) {
-      const match = (existing || []).find(
-        r => r.name.toLowerCase().trim() === similar.toLowerCase().trim()
-      );
+      // Return the existing entry so the form can select it
+      const match = (existing || []).find(r => r.name.toLowerCase().trim() === similar.toLowerCase().trim());
       if (match) {
         showToast(`Selected existing: ${match.name}`, "info");
         haptic("light");
-        if (table === "categories" && brandId) {
-          await supabase
-            .from("brand_categories")
-            .upsert({ brand_id: brandId, category_id: match.id },
-                     { onConflict: "brand_id,category_id" });
-        }
         return { id: match.id, name: match.name };
       }
       return null;
     }
   }
 
-  // ── Insert the new entry ──────────────────────────────────────────────
   const { data, error } = await supabase
     .from(table)
-    .insert([{ name: trimmedName }])
+    .insert([{ name }])
     .select()
     .single();
 
   if (error) {
-    // Race condition: inserted by another session between our check and insert
+    // Unique constraint violation — entry already exists
     if (error.code === "23505") {
-      const { data: raceMatch } = await supabase
-        .from(table).select("id, name")
-        .ilike("name", trimmedName).single();
-      if (raceMatch) {
-        showToast(`"${raceMatch.name}" already exists — using it ✓`, "info");
-        haptic("light");
-        if (table === "categories" && brandId) {
-          await supabase
-            .from("brand_categories")
-            .upsert({ brand_id: brandId, category_id: raceMatch.id },
-                     { onConflict: "brand_id,category_id" });
-        }
-        return { id: raceMatch.id, name: raceMatch.name };
-      }
+      showToast(`"${name}" already exists — select it from the list`, "error");
+      haptic("error");
+    } else {
+      showToast(`Failed to add ${label.toLowerCase()}: ${error.message}`, "error");
     }
-    showToast(`Failed to add ${label.toLowerCase()}: ${error.message}`, "error");
     return null;
-  }
-
-  // ── Link new category to this brand ──────────────────────────────────
-  if (table === "categories" && brandId) {
-    await supabase
-      .from("brand_categories")
-      .insert({ brand_id: brandId, category_id: data.id, sort_order: 99 });
   }
 
   showToast(`${label} "${data.name}" added ✓`, "success");
