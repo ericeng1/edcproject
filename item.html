@@ -824,6 +824,7 @@
   <script type="module">
     import { supabase } from "./supabaseClient.js";
     import { syncThemeFromUser } from "./theme.js";
+    import { loadComments, submitComment } from './comments.js';
 
     const IMG_COLS = ["image_url1","image_url2","image_url3","image_url4","image_url5",
                       "image_url6","image_url7","image_url8","image_url9","image_url10"];
@@ -1376,6 +1377,25 @@
       }
 
     })();
+    
+    const entityId = new URLSearchParams(window.location.search).get('id');
+const entityType = "item";
+
+loadComments(entityId, entityType);
+
+document
+  .getElementById('submit-comment')
+  .addEventListener('click', () => {
+    submitComment(entityId, entityType);
+  });
+  <div id="comments-section">
+  <h3>Comments</h3>
+
+  <div id="comment-list"></div>
+
+  <textarea id="comment-input" placeholder="Write a comment..."></textarea>
+  <button id="submit-comment">Post Comment</button>
+</div>
   </script>
 
 </body>

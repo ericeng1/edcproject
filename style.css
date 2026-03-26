@@ -302,3 +302,30 @@ textarea {
   color: #888;
   margin-top: 6px;
 }
+.comments-section {
+  margin-top: 40px;
+}
+
+.comment {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.comment-content {
+  font-size: 14px;
+}
+
+.comment-date {
+  font-size: 11px;
+  color: gray;
+}
+
+comment-input {
+  width: 100%;
+  height: 80px;
+  margin-top: 10px;
+}
+
+submit-comment {
+  margin-top: 5px;
+}
