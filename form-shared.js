@@ -456,7 +456,7 @@ export function showConfirmDialog({ title, message, inputLabel = null, inputPlac
  *
  * @param {string} table  — "categories" or "materials"
  */
-export async function addNewLookup(table) {
+export async function addNewLookup(table, brandId = null) {
   const label = table === "categories" ? "Category" : "Material";
 
   // Fetch existing names for similarity check
@@ -513,6 +513,46 @@ export async function addNewLookup(table) {
     return null;
   }
 
+  // ── If brandId provided and table is categories, link to brand_categories ──
+  if (brandId && table === "categories") {
+    try {
+      // Check if link already exists
+      const { data: existingLink } = await supabase
+        .from("brand_categories")
+        .select("id")
+        .eq("brand_id", brandId)
+        .eq("category_id", data.id)
+        .single();
+
+      if (!existingLink) {
+        // Find max sort_order for this brand
+        const { data: maxSort } = await supabase
+          .from("brand_categories")
+          .select("sort_order")
+          .eq("brand_id", brandId)
+          .order("sort_order", { ascending: false })
+          .limit(1)
+          .single();
+
+        const nextSort = (maxSort?.sort_order || 0) + 1;
+
+        const { error: linkError } = await supabase
+          .from("brand_categories")
+          .insert({
+            brand_id: brandId,
+            category_id: data.id,
+            sort_order: nextSort
+          });
+
+        if (linkError) {
+          console.warn("Failed to link category to brand:", linkError);
+        }
+      }
+    } catch (e) {
+      console.warn("Error linking category to brand:", e);
+    }
+  }
+
   showToast(`${label} "${data.name}" added ✓`, "success");
   haptic("success");
   return { id: data.id, name: data.name };
@@ -520,21 +560,61 @@ export async function addNewLookup(table) {
 
 // ── DYNAMIC CHIP LOADER ───────────────────────────────────────────────────────
 /**
- * Fetches all rows from `table` and renders them as selectable chips
- * inside `containerId`, with a "+ Add" chip at the end.
+ * Fetches rows from `table` and renders them as selectable chips inside `containerId`.
+ * If `brandId` is provided and `table === "categories"`, fetches ONLY categories
+ * linked to that brand via brand_categories table (brand-scoped curation).
+ * Otherwise, fetches all rows from the table (global fallback).
  *
+ * @param {Object} options
+ * @param {string} options.table - "categories" or "materials"
+ * @param {string} options.containerId - DOM element ID for the chip container
+ * @param {string} options.addChipId - DOM element ID for the "+ Add" chip
+ * @param {Function} options.onSelect - Callback when a chip is selected
+ * @param {number} [options.brandId] - Optional brand ID for category filtering
  * @returns the selected id (updated via closure), and a setter for draft restore.
  */
-export async function loadChips({ table, containerId, addChipId, onSelect }) {
+export async function loadChips({ table, containerId, addChipId, onSelect, brandId }) {
   const container = document.getElementById(containerId);
 
   // Show a subtle loading state
   container.innerHTML = `<span style="font-size:13px;color:var(--muted,#737278);letter-spacing:0.04em;">Loading…</span>`;
 
-  const { data, error } = await supabase
-    .from(table)
-    .select("id, name")
-    .order("name");
+  let data = [];
+  let error = null;
+
+  // Brand-scoped categories: join brand_categories with categories table
+  if (table === "categories" && brandId) {
+    const result = await supabase
+      .from("brand_categories")
+      .select(`
+        category_id,
+        sort_order,
+        categories!inner (
+          id,
+          name
+        )
+      `)
+      .eq("brand_id", brandId)
+      .order("sort_order", { ascending: true });
+
+    error = result.error;
+    if (result.data) {
+      // Flatten nested structure: { categories: { id, name }, ... } → { id, name }
+      data = result.data.map(row => ({
+        id: row.categories.id,
+        name: row.categories.name
+      }));
+    }
+  } else {
+    // Global fallback: fetch all from table
+    const result = await supabase
+      .from(table)
+      .select("id, name")
+      .order("name");
+
+    error = result.error;
+    data = result.data || [];
+  }
 
   if (error) {
     container.innerHTML = `<span style="font-size:13px;color:#c07070;">Failed to load — reload page</span>`;

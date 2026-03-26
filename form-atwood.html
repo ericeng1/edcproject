@@ -162,6 +162,7 @@
     import { syncThemeFromUser } from "./theme.js";
 
     const MAKER_ID = 1;
+    const BRAND_ID = 1;  // Atwood Knife and Tool
 
     (async () => {
       const user = await requireAuth();
@@ -188,13 +189,16 @@
       })();
 
       // ── Load chips dynamically from Supabase ──
+      // Categories: brand-scoped (only show categories linked to Atwood via brand_categories)
       const categoryChips = await loadChips({
         table:       "categories",
         containerId: "category-chips",
         addChipId:   "add-category-chip",
+        brandId:     BRAND_ID,  // ← Pass BRAND_ID for curation
         onSelect:    id => { selectedCategoryId = id; },
       });
 
+      // Materials: global (not brand-scoped)
       const materialChips = await loadChips({
         table:       "materials",
         containerId: "material-chips",
@@ -221,7 +225,7 @@
 
       // ── Add new category ──
       categoryChips.getAddChip().addEventListener("click", async () => {
-        const result = await addNewLookup("categories");
+        const result = await addNewLookup("categories", BRAND_ID);  // ← Pass BRAND_ID
         if (!result) return;
         categoryChips.addAndSelect(result.id, result.name);
         selectedCategoryId = result.id;
@@ -229,7 +233,7 @@
 
       // ── Add new material ──
       materialChips.getAddChip().addEventListener("click", async () => {
-        const result = await addNewLookup("materials");
+        const result = await addNewLookup("materials");  // Materials are global
         if (!result) return;
         materialChips.addAndSelect(result.id, result.name);
         selectedMaterialId = result.id;
