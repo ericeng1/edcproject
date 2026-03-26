@@ -623,7 +623,6 @@
       <nav class="nav-links">
         <a href="home.html"       class="nav-link active">Home</a>
         <a href="my-items.html"   class="nav-link" id="nav-collection" style="display:none;">My Collection</a>
-        <!-- <a href="dashboard.html"  class="nav-link" id="nav-log"        style="display:none;">Log Item</a> -->
       </nav>
     </div>
     <div class="topbar-right">
@@ -735,7 +734,7 @@
       document.getElementById("btn-log").style.display     = "inline-flex";
       document.getElementById("btn-signout").style.display = "inline-flex";
       document.getElementById("nav-collection").style.display = "inline";
-      document.getElementById("nav-log").style.display        = "inline";
+ 
 
       document.getElementById("btn-signout").addEventListener("click", async () => {
         await supabase.auth.signOut();
