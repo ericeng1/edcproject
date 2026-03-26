@@ -780,7 +780,25 @@
 
     </div>
   </div>
+<!-- ✅ COMMENTS SECTION -->
+<div id="comments-section" style="max-width:1080px;margin:40px auto;padding:0 40px;">
+  <h3 style="margin-bottom:12px;">Comments</h3>
 
+  <div id="comment-list"></div>
+
+  <textarea 
+    id="comment-input" 
+    placeholder="Write a comment..."
+    style="width:100%;margin-top:12px;padding:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);"
+  ></textarea>
+
+  <button 
+    id="submit-comment"
+    style="margin-top:8px;padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;"
+  >
+    Post Comment
+  </button>
+</div>
   <!-- ── GROUP SHOTS SECTION ── -->
   <div class="group-shots-section" id="group-shots-section" style="display:none;">
 
@@ -1377,25 +1395,21 @@
       }
 
     })();
-    
-    const entityId = new URLSearchParams(window.location.search).get('id');
-const entityType = "item";
+ window.addEventListener('DOMContentLoaded', () => {
+  const entityId = new URLSearchParams(window.location.search).get('id');
+  const entityType = "item";
 
-loadComments(entityId, entityType);
+  if (!entityId) return;
 
-document
-  .getElementById('submit-comment')
-  .addEventListener('click', () => {
-    submitComment(entityId, entityType);
-  });
-  <div id="comments-section">
-  <h3>Comments</h3>
+  loadComments(entityId, entityType);
 
-  <div id="comment-list"></div>
-
-  <textarea id="comment-input" placeholder="Write a comment..."></textarea>
-  <button id="submit-comment">Post Comment</button>
-</div>
+  const btn = document.getElementById('submit-comment');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      submitComment(entityId, entityType);
+    });
+  }
+});
   </script>
 
 </body>
