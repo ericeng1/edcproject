@@ -780,23 +780,33 @@
 
     </div>
   </div>
-<!-- ✅ COMMENTS SECTION -->
 <div id="comments-section" style="max-width:1080px;margin:40px auto;padding:0 40px;">
-  <h3 style="margin-bottom:12px;">Comments</h3>
+  <h3 style="margin-bottom:16px;font-family:var(--font-primary);letter-spacing:.05em;">Comments</h3>
 
   <div id="comment-list"></div>
 
   <textarea 
     id="comment-input" 
-    placeholder="Write a comment..."
-    style="width:100%;margin-top:12px;padding:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:var(--text);"
+    maxlength="140"
+    placeholder="Write a comment (max 140 characters)..."
+    style="width:100%;margin-top:16px;padding:12px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-body);"
   ></textarea>
 
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+    <span id="char-count" style="font-size:11px;color:var(--muted);">0 / 140</span>
+    <button 
+      id="submit-comment"
+      style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;"
+    >
+      Post
+    </button>
+  </div>
+
   <button 
-    id="submit-comment"
-    style="margin-top:8px;padding:8px 14px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;"
+    id="load-more-comments"
+    style="display:none;margin-top:20px;padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;"
   >
-    Post Comment
+    Load more
   </button>
 </div>
   <!-- ── GROUP SHOTS SECTION ── -->
@@ -1401,14 +1411,25 @@
 
   if (!entityId) return;
 
-  loadComments(entityId, entityType);
+  loadComments(entityId, entityType, true);
 
-  const btn = document.getElementById('submit-comment');
-  if (btn) {
-    btn.addEventListener('click', () => {
+  document.getElementById('submit-comment')
+    .addEventListener('click', () => {
       submitComment(entityId, entityType);
     });
-  }
+
+  document.getElementById('load-more-comments')
+    .addEventListener('click', () => {
+      loadComments(entityId, entityType, false);
+    });
+
+  // Character counter
+  const input = document.getElementById('comment-input');
+  const counter = document.getElementById('char-count');
+
+  input.addEventListener('input', () => {
+    counter.textContent = `${input.value.length} / 140`;
+  });
 });
   </script>
 
