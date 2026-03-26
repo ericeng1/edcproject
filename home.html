@@ -775,6 +775,8 @@
         .order("created_at", { ascending: false })
         .limit(5);
 
+        console.log("myItems:", JSON.stringify(myItems, null, 2)); 
+
       userZone.innerHTML = `
         <div class="section-header">
           <div class="section-title">My Collection</div>
