@@ -13,9 +13,10 @@ export async function loadComments(entityId, entityType, reset = true) {
   const { data, error } = await supabase
     .from('comments')
     .select(`
-      *,
-      comment_likes(count)
-    `)
+  *,
+  comment_likes(count),
+  profiles(display_name)
+`)
     .eq('entity_id', entityId)
     .eq('entity_type', entityType)
     .order('created_at', { ascending: false })
@@ -30,7 +31,13 @@ export async function loadComments(entityId, entityType, reset = true) {
   const list = document.getElementById('comment-list');
 
 for (const comment of data) {
-  const displayName = comment.user_id.slice(0,6); // simple + safe
+let displayName = comment.user_id.slice(0,6);
+
+if (comment.profiles?.display_name) {
+  displayName = comment.profiles.display_name;
+} else if (user && user.id === comment.user_id) {
+  displayName = user.email;
+}
 
     const isOwner = user && user.id === comment.user_id;
 
@@ -41,7 +48,7 @@ for (const comment of data) {
       <div class="comment-header">
         <span class="comment-user">${displayName}</span>
         <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
-        ${comment.updated_at ? '<span class="comment-edited">(edited)</span>' : ''}
+        ${comment.edited_at ? '<span class="comment-edited">(edited)</span>' : ''}
         ${isOwner ? `<button class="comment-edit" data-id="${comment.id}">Edit</button>` : ''}
         ${isOwner ? `<button class="comment-delete" data-id="${comment.id}">Delete</button>` : ''}
       </div>
@@ -78,7 +85,10 @@ for (const comment of data) {
       if (!newText || newText.length > 140) return;
 
       await supabase.from('comments')
-        .update({ content: newText, updated_at: new Date() })
+       .update({ 
+  content: newText, 
+  edited_at: new Date().toISOString() 
+})
         .eq('id', id);
 
       loadComments(entityId, entityType, true);
