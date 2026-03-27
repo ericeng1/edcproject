@@ -29,20 +29,8 @@ export async function loadComments(entityId, entityType, reset = true) {
   const { data: { user } } = await supabase.auth.getUser();
   const list = document.getElementById('comment-list');
 
-  for (const comment of data) {
-    let displayName = "User";
-
-    // Try to get display name/email
-    let displayName = comment.user_id.slice(0,6);
-      .catch(() => ({ data: null }));
-
-    if (commentUser?.user?.user_metadata?.display_name) {
-      displayName = commentUser.user.user_metadata.display_name;
-    } else if (commentUser?.user?.email) {
-      displayName = commentUser.user.email;
-    } else {
-      displayName = comment.user_id.slice(0,6);
-    }
+for (const comment of data) {
+  const displayName = comment.user_id.slice(0,6); // simple + safe
 
     const isOwner = user && user.id === comment.user_id;
 
