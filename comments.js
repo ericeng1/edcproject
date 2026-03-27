@@ -14,7 +14,7 @@ export async function loadComments(entityId, entityType, reset = true) {
     .from('comments')
     .select(`
   *,
-  comment_likes(count),
+  comment_likes(count)
 `)
     .eq('entity_id', entityId)
     .eq('entity_type', entityType)
@@ -165,5 +165,4 @@ export async function submitComment(entityId, entityType) {
   input.value = '';
 
   loadComments(entityId, entityType, true);
-  console.log("INSERTING:", { entityId, entityType });
 }
