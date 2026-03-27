@@ -12,7 +12,7 @@ export async function loadComments(entityId, entityType, reset = true) {
 
   const { data, error } = await supabase
     .from('comments')
-    .select('*, comment_likes(count), profiles!comments_user_id_fkey(display_name)')
+    .select('*, comment_likes(count), profiles(display_name)')
     .eq('entity_id', entityId)
     .eq('entity_type', entityType)
     .order('created_at', { ascending: false })
