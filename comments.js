@@ -29,9 +29,15 @@ export async function loadComments(entityId, entityType, reset = true) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const list = document.getElementById('comment-list');
+  if (!list) {
+  console.error("Missing #comment-list element");
+  return;
+}
 
 for (const comment of data) {
-let displayName = comment.user_id.slice(0,6);
+let displayName = comment.user_id
+  ? comment.user_id.slice(0,6)
+  : "anon";
 
 if (comment.profiles?.display_name) {
   displayName = comment.profiles.display_name;
@@ -59,7 +65,7 @@ if (comment.profiles?.display_name) {
 
       <div class="comment-actions">
         <span class="comment-like" data-id="${comment.id}">❤️</span>
-        <span class="like-count">${comment.comment_likes[0]?.count || 0}</span>
+        <span class="like-count">${comment.comment_likes?.[0]?.count || 0}</span>
       </div>
     `;
 
