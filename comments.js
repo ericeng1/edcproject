@@ -94,8 +94,6 @@ const { error } = await supabase.from('comments')
 if (error) {
   console.error("UPDATE ERROR:", error);
 }
-  
-        .eq('id', id);
 
       loadComments(entityId, entityType, true);
     };
