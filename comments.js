@@ -165,4 +165,5 @@ export async function submitComment(entityId, entityType) {
   input.value = '';
 
   loadComments(entityId, entityType, true);
+  console.log("INSERTING:", { entityId, entityType });
 }
