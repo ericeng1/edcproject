@@ -84,11 +84,17 @@ if (comment.profiles?.display_name) {
       const newText = prompt("Edit your comment:", oldText);
       if (!newText || newText.length > 140) return;
 
-      await supabase.from('comments')
-       .update({ 
-  content: newText, 
-  edited_at: new Date().toISOString() 
-})
+const { error } = await supabase.from('comments')
+  .update({ 
+    content: newText, 
+    updated_at: new Date().toISOString() 
+  })
+  .eq('id', id);
+
+if (error) {
+  console.error("UPDATE ERROR:", error);
+}
+  
         .eq('id', id);
 
       loadComments(entityId, entityType, true);
