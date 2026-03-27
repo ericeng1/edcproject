@@ -15,7 +15,6 @@ export async function loadComments(entityId, entityType, reset = true) {
     .select(`
   *,
   comment_likes(count),
-  profiles(display_name)
 `)
     .eq('entity_id', entityId)
     .eq('entity_type', entityType)
