@@ -48,7 +48,7 @@ if (comment.profiles?.display_name) {
       <div class="comment-header">
         <span class="comment-user">${displayName}</span>
         <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
-        ${comment.edited_at ? '<span class="comment-edited">(edited)</span>' : ''}
+        ${comment.updated_at ? '<span class="comment-edited">(edited)</span>' : ''}
         ${isOwner ? `<button class="comment-edit" data-id="${comment.id}">Edit</button>` : ''}
         ${isOwner ? `<button class="comment-delete" data-id="${comment.id}">Delete</button>` : ''}
       </div>
