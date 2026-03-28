@@ -1014,7 +1014,7 @@
                           <div class="data-value${label === "MSRP" ? " price" : ""}">${value}</div>`;
         gridEl.appendChild(cell);
       };
-
+      addCell("Owner",    username);
       addCell("Brand",    item.brands?.company);
       addCell("Category", item.categories?.name);
       addCell("Material", item.materials?.name);
