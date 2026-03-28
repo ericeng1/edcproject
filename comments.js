@@ -12,7 +12,7 @@ export async function loadComments(entityId, entityType, reset = true) {
 
   const { data, error } = await supabase
     .from('comments')
-    .select('*, comment_likes(count), profiles(display_name)')
+    .select('*, comment_likes(count), profiles(username)')
     .eq('entity_id', entityId)
     .eq('entity_type', entityType)
     .order('created_at', { ascending: false })
@@ -35,8 +35,8 @@ let displayName = comment.user_id
   ? comment.user_id.slice(0,6)
   : "anon";
 
-if (comment.profiles?.display_name) {
-  displayName = comment.profiles.display_name;
+if (comment.profiles?.username) {
+  displayName = comment.profiles.username;
 } else if (user && user.id === comment.user_id) {
   displayName = user.email;
 }
