@@ -725,22 +725,32 @@
     const isLoggedIn = !!session;
     currentUserId = session?.user?.id ?? null;
 
-    if (isLoggedIn) {
-      const emailEl = document.getElementById("topbar-email");
-      const displayName = session.user.user_metadata?.display_name;
-      emailEl.innerHTML = `<a href="account.html" style="color:var(--muted);text-decoration:none;transition:color .2s;"
-        onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"
-        >${displayName || session.user.email}</a>`;
-      document.getElementById("btn-log").style.display     = "inline-flex";
-      document.getElementById("btn-signout").style.display = "inline-flex";
-      document.getElementById("nav-collection").style.display = "inline";
- 
+if (isLoggedIn) {
+  const emailEl = document.getElementById("topbar-email");
 
-      document.getElementById("btn-signout").addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "home.html";
-      });
-    } else {
+  // 🔹 Fetch username from profiles table
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", session.user.id)
+    .single();
+
+  const username = profile?.username;
+
+  emailEl.innerHTML = `<a href="account.html" style="color:var(--muted);text-decoration:none;transition:color .2s;"
+    onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"
+    >${username || session.user.email}</a>`;
+
+  document.getElementById("btn-log").style.display     = "inline-flex";
+  document.getElementById("btn-signout").style.display = "inline-flex";
+  document.getElementById("nav-collection").style.display = "inline";
+
+  document.getElementById("btn-signout").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    window.location.href = "home.html";
+  });
+}
+    else {
       document.getElementById("btn-signin").style.display = "inline-flex";
     }
 
