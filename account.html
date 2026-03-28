@@ -411,11 +411,10 @@
       <div class="section-title">Identity</div>
 
       <div class="field">
-        <label class="field-label" for="display-name">Display Name</label>
-        <input type="text" class="field-input" id="display-name"
-               placeholder="How you'll appear to others" maxlength="40" />
-        <div class="field-hint">Optional. Used in future community features. Max 40 characters.</div>
-      </div>
+  <label class="field-label" for="username">Username</label>
+<input type="text" class="field-input" id="username"
+       placeholder="Choose a username" maxlength="30" />
+<div class="field-hint">This is your public @username</div>
 
       <div class="field">
         <label class="field-label">Email Address</label>
@@ -527,10 +526,21 @@
     // ── POPULATE FIELDS ──
     document.getElementById("email-display").value =
       user.email || "";
-    document.getElementById("display-name").value  =
-      user.user_metadata?.display_name || "";
-    document.getElementById("page-sub").textContent =
-      user.user_metadata?.display_name || user.email || "Settings & preferences";
+
+  // ── FETCH PROFILE ──
+const { data: profile, error: profileError } = await supabase
+  .from("profiles")
+  .select("username")
+  .eq("id", user.id)
+  .single();
+
+if (profileError) {
+  console.error("Profile fetch error:", profileError);
+} else {
+  document.getElementById("username").value = profile.username || "";
+  document.getElementById("page-sub").textContent =
+    profile.username || user.email || "Settings & preferences";
+}
 
     // ── THEME TOGGLE — per-user, saved to Supabase user_metadata ──
     // On load: prefer user_metadata.theme, fall back to localStorage
@@ -566,21 +576,34 @@
 
 
 
-    // ── SAVE IDENTITY ──
-    document.getElementById("btn-save-identity").addEventListener("click", async () => {
-      const btn  = document.getElementById("btn-save-identity");
-      const name = document.getElementById("display-name").value.trim();
-      btn.disabled = true;
 
-      const { error } = await supabase.auth.updateUser({
-        data: { display_name: name || null },
-      });
+// ── SAVE USERNAME ──
+document.getElementById("btn-save-identity").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-save-identity");
+  const username = document.getElementById("username").value.trim();
 
-      btn.disabled = false;
-      if (error) { toast("Save failed: " + error.message, "error"); return; }
-      document.getElementById("page-sub").textContent = name || user.email;
-      toast("Display name saved ✓", "success");
-    });
+  if (!username) {
+    toast("Username cannot be empty", "error");
+    return;
+  }
+
+  btn.disabled = true;
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ username })
+    .eq("id", user.id);
+
+  btn.disabled = false;
+
+  if (error) {
+    toast("Save failed: " + error.message, "error");
+    return;
+  }
+
+  document.getElementById("page-sub").textContent = username;
+  toast("Username updated ✓", "success");
+});
 
     // ── CHANGE PASSWORD ──
     document.getElementById("btn-save-password").addEventListener("click", async () => {
