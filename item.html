@@ -927,7 +927,8 @@
           is_private, comments, extra,
           brands     ( id, company, first_name, last_name ),
           categories ( name ),
-          materials  ( name )
+          materials  ( name ),
+          profiles:user_id ( username )
         `)
         .eq("id", currentItemId)
         .single();
@@ -1014,7 +1015,7 @@
                           <div class="data-value${label === "MSRP" ? " price" : ""}">${value}</div>`;
         gridEl.appendChild(cell);
       };
-      addCell("Owner",    username);
+      addCell("Owner",    item.profiles?.username || "Unknown");
       addCell("Brand",    item.brands?.company);
       addCell("Category", item.categories?.name);
       addCell("Material", item.materials?.name);
