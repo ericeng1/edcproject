@@ -307,7 +307,7 @@
   </div>
 
   <!-- Email / Password form -->
-    <div class="field" id="username-form">
+    <div class="field" id="username-form" style="display:none;">
       <label for="username">Username</label>
       <input type="text" id="username" placeholder="Enter an username" 
       required
@@ -393,21 +393,24 @@
   }
 
   // ── TAB SWITCH ───────────────────────────────────────────────────────────────
-  window.switchTab = function(tab) {
-    currentTab = tab;
-    const isSignup = tab === "signup";
+window.switchTab = function(tab) {
+  currentTab = tab;
+  const isSignup = tab === "signup";
 
-    document.getElementById("tab-signin").classList.toggle("active", !isSignup);
-    document.getElementById("tab-signup").classList.toggle("active",  isSignup);
-    document.getElementById("field-confirm").style.display = isSignup ? "block" : "none";
-    document.getElementById("forgot-btn").style.display    = isSignup ? "none"  : "block";
-    document.getElementById("submit-btn").textContent      = isSignup ? "Create Account" : "Sign In";
-    document.getElementById("switch-text").innerHTML       = isSignup
-      ? `Already have an account? <a onclick="switchTab('signin')">Sign in</a>`
-      : `Don't have an account? <a onclick="switchTab('signup')">Create one</a>`;
+  document.getElementById("tab-signin").classList.toggle("active", !isSignup);
+  document.getElementById("tab-signup").classList.toggle("active",  isSignup);
 
-    clearStatus();
-  };
+  document.getElementById("field-confirm").style.display = isSignup ? "block" : "none";
+  document.getElementById("username-form").style.display = isSignup ? "block" : "none"; // ✅ ADD THIS
+  document.getElementById("forgot-btn").style.display    = isSignup ? "none"  : "block";
+
+  document.getElementById("submit-btn").textContent      = isSignup ? "Create Account" : "Sign In";
+  document.getElementById("switch-text").innerHTML       = isSignup
+    ? `Already have an account? <a onclick="switchTab('signin')">Sign in</a>`
+    : `Don't have an account? <a onclick="switchTab('signup')">Create one</a>`;
+
+  clearStatus();
+};
 
   // ── EMAIL / PASSWORD AUTH ────────────────────────────────────────────────────
   window.handleEmailAuth = async function() {
@@ -422,7 +425,13 @@
     setLoading(true);
 
     if (currentTab === "signup") {
-      const username = document.getElementById("username").value;
+  const username = document.getElementById("username").value.trim();
+
+  if (!username) {
+    showStatus("Username is required.", "error");
+    setLoading(false);
+    return;
+  }
       const { error } = await supabase.auth.signUp({ email, password,
         options: {
     data: {
