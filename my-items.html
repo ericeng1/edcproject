@@ -434,10 +434,16 @@
 
       const user = session.user;
       const emailEl = document.getElementById("user-email");
-      const displayName = user.user_metadata?.display_name;
+       const { data: profile, profileerror } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", session.user.id)
+    .single();
+
+  const username = profile?.username;
       emailEl.innerHTML = `<a href="account.html" style="color:var(--muted);text-decoration:none;transition:color .2s;"
         onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"
-        >${displayName || user.email}</a>`;
+        >${username || user.email}</a>`;
 
       document.getElementById("signout-btn").addEventListener("click", async () => {
         await supabase.auth.signOut();
