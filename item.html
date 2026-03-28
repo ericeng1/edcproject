@@ -888,10 +888,17 @@
       if (isLoggedIn) {
         currentUserId = session.user.id;
         const emailEl = document.getElementById("user-email");
-        const displayName = session.user.user_metadata?.display_name;
+          // 🔹 Fetch username from profiles table
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", session.user.id)
+    .single();
+
+  const username = profile?.username;
         emailEl.innerHTML = `<a href="account.html" style="color:var(--muted);text-decoration:none;transition:color .2s;"
           onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'"
-          >${displayName || session.user.email}</a>`;
+          >${username || session.user.email}</a>`;
         document.getElementById("signout-btn").style.display = "inline-flex";
         document.getElementById("signout-btn").addEventListener("click", async () => {
           await supabase.auth.signOut();
