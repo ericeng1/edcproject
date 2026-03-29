@@ -13,16 +13,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/navigation.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="form-brand.css" />
 </head>
 <body>
 
-  <header class="topbar">
-    <a href="dashboard.html" class="back-btn">← Brands</a>
-    <a href="dashboard.html" class="logo">Showoffy</a>
-    <div class="topbar-right">
+  <header class="topbar topbar-with-back">
+    <a href="#" class="back-btn" id="back-btn">← Go Back</a>
+    <a href="home.html" class="logo">Showoffy</a>
+    <nav class="topbar-nav">
       <a href="my-items.html" class="nav-link">My Items</a>
-      <button class="nav-link" id="signout-btn">Sign Out</button>
+    </nav>
+    <div class="topbar-right">
+      <button class="nav-link nav-link-signout" id="signout-btn">Sign Out</button>
     </div>
   </header>
 
