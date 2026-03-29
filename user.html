@@ -9,7 +9,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wweight@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>User Collection</title>
@@ -173,11 +173,63 @@
       padding: 0 32px 60px;
     }
 
+    /* ── BRAND GROUPS ── */
+    .brand-group {
+      margin-bottom: 48px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand-name {
+      font-family: var(--font-primary), sans-serif;
+      font-size: 28px;
+      letter-spacing: 0.08em;
+    }
+
+    .brand-name-link {
+      text-decoration: none;
+      color: inherit;
+      transition: color 0.2s;
+    }
+
+    .brand-name-link:hover { color: var(--accent); }
+
+    .brand-maker {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .brand-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
     /* ── ITEM GRID ── */
     .items-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 16px;
+    }
+
+    .items-grid.collapsed {
+      grid-template-columns: repeat(4, 1fr);
     }
 
     /* ── ITEM CARD ── */
@@ -200,11 +252,6 @@
       color: inherit;
       display: block;
       animation: fadeUp 0.4s ease both;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
 
     /* ── CARD IMAGE ── */
@@ -282,11 +329,37 @@
       letter-spacing: 0.05em;
     }
 
+    /* ── SHOW MORE BUTTON ── */
+    .show-more-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .show-more-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-family: var(--font-body), sans-serif;
+      font-size: 13px;
+      color: var(--accent);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      letter-spacing: 0.04em;
+    }
+
+    .show-more-btn:hover {
+      border-color: var(--accent);
+      background: rgba(200, 150, 74, 0.08);
+    }
+
     /* ── MOBILE ── */
     @media (max-width: 600px) {
       .topbar { padding: 12px 16px; }
       .page-header, .stats-row, .content { padding-left: 16px; padding-right: 16px; }
       .items-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+      .items-grid.collapsed { grid-template-columns: repeat(2, 1fr); }
     }
 
     /* ── LIGHT THEME OVERRIDES ── */
@@ -318,11 +391,12 @@
 
   <div class="page-header">
     <h1><span id="display-username">Loading</span>'s <span>Collection</span></h1>
-    <p id="page-subtitle">Curated items from this collector</p>
+    <p id="page-subtitle">Curated items grouped by brand</p>
   </div>
 
   <div class="stats-row" id="stats-row" style="display:none;">
     <div class="stat-chip"><strong id="stat-total">0</strong> Items</div>
+    <div class="stat-chip"><strong id="stat-brands">0</strong> Brands</div>
   </div>
 
   <main class="content" id="content">
@@ -412,56 +486,100 @@
           return;
         }
 
+        // Group items by brand
+        const grouped = {};
+        items.forEach(item => {
+          const key = item.maker_id ?? "unknown";
+          if (!grouped[key]) grouped[key] = { brand: item.brands, items: [] };
+          grouped[key].items.push(item);
+        });
+
         // Update stats
         document.getElementById('stats-row').style.display = 'flex';
         document.getElementById('stat-total').textContent = items.length;
+        document.getElementById('stat-brands').textContent = Object.keys(grouped).length;
 
-        // Render items
-        mainEl.innerHTML = `<div class="items-grid" id="grid"></div>`;
-        const grid = mainEl.querySelector('#grid');
+        // Render items grouped by brand
+        mainEl.innerHTML = "";
+        let groupIndex = 0;
 
-        items.forEach((item, idx) => {
-          const card = document.createElement('div');
-          card.className = 'item-card';
-          card.style.animation = `fadeUp 0.4s ease ${idx * 0.04}s both`;
+        Object.values(grouped).forEach((group) => {
+          const { brand, items: groupItems } = group;
+          const companyName = brand?.company || "Unknown Brand";
+          const makerName = [brand?.first_name, brand?.last_name].filter(Boolean).join(" ").trim();
+          const makerId = brand?.id ?? null;
 
-          const imageUrl = item.image_url1 || item.image_url2 || item.image_url3;
-          const imageHtml = imageUrl
-            ? `<img class="card-image" src="${imageUrl}" alt="" loading="lazy"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-               <div class="card-image-placeholder" style="display:none">◻</div>`
-            : `<div class="card-image-placeholder">◻</div>`;
+          const groupEl = document.createElement("div");
+          groupEl.className = "brand-group";
+          groupEl.style.animationDelay = `${groupIndex * 0.07}s`;
 
-          const titleParts = [
-            item.categories?.name,
-            item.variant && item.variant !== "none" ? item.variant : null
-          ].filter(Boolean);
-
-          const metaTags = [
-            item.materials?.name ? `<span class="meta-tag">${item.materials.name}</span>` : "",
-            item.size            ? `<span class="meta-tag">${item.size}"</span>` : "",
-            item.born_on_date    ? `<span class="meta-tag">${item.born_on_date}</span>` : "",
-          ].filter(Boolean).join("");
-
-          const msrp = item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : "";
-
-          card.innerHTML = `
-            ${imageHtml}
-            <div class="card-body">
-              <div class="card-category">${item.categories?.name || 'Item'}</div>
-              <div class="card-title">${escapeHtml(titleParts.join(" — ") || "Item")}</div>
-              <div class="card-meta">${metaTags}</div>
+          // Brand header
+          const headerHtml = `
+            <div class="brand-header">
+              ${makerId
+                ? `<a href="maker.html?id=${makerId}" class="brand-name brand-name-link">${escapeHtml(companyName)}</a>`
+                : `<div class="brand-name">${escapeHtml(companyName)}</div>`}
+              ${makerName ? `<div class="brand-maker">by ${escapeHtml(makerName)}</div>` : ""}
+              <div class="brand-count">${groupItems.length} item${groupItems.length !== 1 ? "s" : ""}</div>
             </div>
-            <div class="card-footer">
-              ${msrp}
-            </div>
+            <div class="items-grid ${groupItems.length > 4 ? 'collapsed' : ''}" id="grid-${groupIndex}"></div>
+            ${groupItems.length > 4 ? `<div class="show-more-container" id="more-${groupIndex}"><button class="show-more-btn" onclick="window.expandGroup(${groupIndex}, ${groupItems.length})">Show all ${groupItems.length} items</button></div>` : ''}
           `;
 
-          const link = document.createElement('a');
-          link.href = `item.html?id=${encodeURIComponent(item.id)}`;
-          link.className = 'item-card-link';
-          link.appendChild(card);
-          grid.appendChild(link);
+          groupEl.innerHTML = headerHtml;
+          mainEl.appendChild(groupEl);
+
+          const grid = groupEl.querySelector(`#grid-${groupIndex}`);
+          const visibleCount = Math.min(4, groupItems.length);
+
+          // Render items
+          groupItems.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'item-card';
+            card.style.animation = `fadeUp 0.4s ease ${idx * 0.04}s both`;
+            card.style.display = idx < visibleCount ? 'block' : 'none';
+            card.id = `item-${groupIndex}-${idx}`;
+
+            const imageUrl = item.image_url1 || item.image_url2 || item.image_url3;
+            const imageHtml = imageUrl
+              ? `<img class="card-image" src="${imageUrl}" alt="" loading="lazy"
+                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                 <div class="card-image-placeholder" style="display:none">◻</div>`
+              : `<div class="card-image-placeholder">◻</div>`;
+
+            const titleParts = [
+              item.categories?.name,
+              item.variant && item.variant !== "none" ? item.variant : null
+            ].filter(Boolean);
+
+            const metaTags = [
+              item.materials?.name ? `<span class="meta-tag">${escapeHtml(item.materials.name)}</span>` : "",
+              item.size ? `<span class="meta-tag">${escapeHtml(item.size)}"</span>` : "",
+              item.born_on_date ? `<span class="meta-tag">${escapeHtml(item.born_on_date)}</span>` : "",
+            ].filter(Boolean).join("");
+
+            const msrp = item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : "";
+
+            card.innerHTML = `
+              ${imageHtml}
+              <div class="card-body">
+                <div class="card-category">${escapeHtml(item.categories?.name || 'Item')}</div>
+                <div class="card-title">${escapeHtml(titleParts.join(" — ") || "Item")}</div>
+                <div class="card-meta">${metaTags}</div>
+              </div>
+              <div class="card-footer">
+                ${msrp}
+              </div>
+            `;
+
+            const link = document.createElement('a');
+            link.href = `item.html?id=${encodeURIComponent(item.id)}`;
+            link.className = 'item-card-link';
+            link.appendChild(card);
+            grid.appendChild(link);
+          });
+
+          groupIndex++;
         });
 
       } catch (error) {
@@ -475,6 +593,22 @@
           </div>`;
       }
     }
+
+    // Global function to expand group
+    window.expandGroup = function(groupIndex, totalItems) {
+      const grid = document.querySelector(`#grid-${groupIndex}`);
+      const moreBtn = document.querySelector(`#more-${groupIndex}`);
+      
+      // Show all items
+      for (let i = 0; i < totalItems; i++) {
+        const item = document.getElementById(`item-${groupIndex}-${i}`);
+        if (item) item.style.display = 'block';
+      }
+
+      // Remove collapsed class and hide button
+      grid.classList.remove('collapsed');
+      if (moreBtn) moreBtn.style.display = 'none';
+    };
 
     // Initialize page
     async function init() {
