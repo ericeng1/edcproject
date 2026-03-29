@@ -345,6 +345,19 @@
       color: var(--accent);
     }
 
+    /* Owner link in data grid */
+    .owner-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .owner-link:hover {
+      color: var(--accent2);
+      text-decoration: underline;
+    }
+
     /* Comments */
     .comments-block {
       background: var(--surface);
@@ -862,6 +875,13 @@
     let isOwner        = false;
     let activeImageUrl = null;
 
+    // ── HELPER FUNCTIONS ──
+    const escapeHtmlForGrid = (text) => {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    };
+
     // ── STATE HELPERS ──
     const showError = (msg) => {
       document.getElementById("state-loading").style.display = "none";
@@ -1015,7 +1035,17 @@
                           <div class="data-value${label === "MSRP" ? " price" : ""}">${value}</div>`;
         gridEl.appendChild(cell);
       };
-      addCell("Owner",    item.profiles?.username || "Unknown");
+      
+      // Owner cell with clickable link
+      if (item.profiles?.username) {
+        const ownerCell = document.createElement("div");
+        ownerCell.className = "data-cell";
+        ownerCell.innerHTML = `<div class="data-label">Owner</div>
+                               <div class="data-value"><a href="user.html?username=${encodeURIComponent(item.profiles.username)}" class="owner-link">${escapeHtmlForGrid(item.profiles.username)}</a></div>`;
+        gridEl.appendChild(ownerCell);
+      } else {
+        addCell("Owner", "Unknown");
+      }
       addCell("Brand",    item.brands?.company);
       addCell("Category", item.categories?.name);
       addCell("Material", item.materials?.name);

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <script>
+    (function() {
+      var t = localStorage.getItem("showoffy_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Lato:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Collection</title>
+  <style>
+    :root {
+    /* ── GLOBAL FONT SYSTEM ──
+       Primary:   Bebas Neue      → headlines, logo, labels
+       Secondary: Lato            → body, paragraphs, UI
+       Accent:    Cormorant Garamond → prices, pull quotes, decorative
+    */
+    --font-primary: 'Bebas Neue', sans-serif;
+    --font-body:    'Lato', sans-serif;
+    --font-accent:  'Cormorant Garamond', serif;
+      --bg:        #111213;
+      --surface:   #1a1b1d;
+      --surface2:  #222426;
+      --border:    #2e3033;
+      --text:      #e8e6e1;
+      --muted:     #9a9896;
+      --accent:    #c8964a;
+      --accent2:   #7eb8d4;
+      --danger:    #c0504a;
+      --radius:    8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body), sans-serif;
+      font-weight: 300;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      background-image:
+        radial-gradient(ellipse 70% 40% at 90% 0%, rgba(200,150,74,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 5% 100%, rgba(126,184,212,0.04) 0%, transparent 50%);
+    }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 32px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .topbar-brand {
+      font-family: var(--font-primary), sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: var(--font-body), sans-serif;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      padding: 48px 32px 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .page-header h1 {
+      font-family: var(--font-primary), sans-serif;
+      font-size: clamp(42px, 6vw, 72px);
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+
+    .page-header h1 span { color: var(--accent); }
+
+    .page-header p {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      padding: 0 32px 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .stat-chip strong { color: var(--accent); font-weight: 700; margin-right: 5px; }
+
+    /* ── STATE MESSAGES ── */
+    .state-msg {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .state-msg .icon { font-size: 40px; margin-bottom: 16px; }
+
+    /* ── ERROR MESSAGE ── */
+    .error-msg {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--danger);
+      font-size: 15px;
+      background: rgba(192, 80, 74, 0.08);
+      border: 1px solid var(--danger);
+      border-radius: var(--radius);
+      margin: 0 32px;
+      max-width: 1100px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .error-msg .icon { font-size: 40px; margin-bottom: 16px; }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px 60px;
+    }
+
+    /* ── ITEM GRID ── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── ITEM CARD ── */
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .item-card:hover {
+      border-color: #444;
+      transform: translateY(-2px);
+    }
+
+    .item-card-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── CARD IMAGE ── */
+    .card-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-image-placeholder {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, var(--surface2) 0%, var(--border) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 60px;
+    }
+
+    /* ── CARD BODY ── */
+    .card-body {
+      padding: 12px 14px;
+    }
+
+    .card-category {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-family: var(--font-primary), sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+      word-wrap: break-word;
+      line-height: 1.3;
+      color: var(--text);
+    }
+
+    .card-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .meta-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── CARD FOOTER ── */
+    .card-footer {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-msrp {
+      font-family: var(--font-accent), serif;
+      font-size: 16px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      .topbar { padding: 12px 16px; }
+      .page-header, .stats-row, .content { padding-left: 16px; padding-right: 16px; }
+      .items-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+    }
+
+    /* ── LIGHT THEME OVERRIDES ── */
+    [data-theme="light"] {
+      --bg:       #f4f1ec;
+      --surface:  #ffffff;
+      --surface2: #ebe8e2;
+      --border:   #d6d1c8;
+      --text:     #1c1a17;
+      --muted:    #7a7570;
+      --accent:   #b07d32;
+      --accent2:  #4a8ba8;
+      --danger:   #a03830;
+    }
+
+    html { transition: background 0.25s; }
+    body { transition: background 0.25s, color 0.25s; }
+    .topbar { transition: background 0.25s, border-color 0.25s; }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="home.html" style="text-decoration:none;" class="topbar-brand">Showoffy</a>
+    <div class="topbar-right">
+      <a href="home.html" class="btn-ghost">← Home</a>
+    </div>
+  </header>
+
+  <div class="page-header">
+    <h1><span id="display-username">Loading</span>'s <span>Collection</span></h1>
+    <p id="page-subtitle">Curated items from this collector</p>
+  </div>
+
+  <div class="stats-row" id="stats-row" style="display:none;">
+    <div class="stat-chip"><strong id="stat-total">0</strong> Items</div>
+  </div>
+
+  <main class="content" id="content">
+    <div class="state-msg" id="loading-msg">
+      <div class="icon">⬡</div>
+      Loading collection…
+    </div>
+  </main>
+
+  <script type="module">
+    import { supabase } from "./supabaseClient.js";
+    import { syncThemeFromUser } from "./theme.js";
+
+    let displayUsername = "";
+
+    // Get username from URL parameter
+    function getUsernameFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('username');
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Fetch items for the given user
+    async function fetchUserItems(username) {
+      const mainEl = document.getElementById('content');
+      const loadMsg = document.getElementById('loading-msg');
+
+      try {
+        // First, fetch the user from the profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .eq('username', username)
+          .single();
+
+        if (profileError || !profile) {
+          loadMsg.style.display = 'none';
+          mainEl.innerHTML = `
+            <div class="error-msg">
+              <div class="icon">✕</div>
+              User not found:<br>
+              <small>${username}</small>
+            </div>`;
+          return;
+        }
+
+        // Fetch items for this user (only public items)
+        const { data: items, error: itemsError } = await supabase
+          .from('items')
+          .select(`
+            id,
+            variant,
+            size,
+            msrp,
+            born_on_date,
+            image_url1,
+            image_url2,
+            image_url3,
+            is_private,
+            comments,
+            extra,
+            maker_id,
+            brands ( id, company, first_name, last_name ),
+            categories ( name ),
+            materials ( name )
+          `)
+          .eq('user_id', profile.id)
+          .eq('is_private', false)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false });
+
+        if (itemsError) {
+          throw new Error(itemsError.message);
+        }
+
+        if (!items || items.length === 0) {
+          loadMsg.innerHTML = `
+            <div class="icon">◻</div>
+            No public items yet.<br>
+            <a href="home.html" style="color:var(--accent);text-decoration:none;margin-top:8px;display:inline-block;">Back to home →</a>`;
+          return;
+        }
+
+        // Update stats
+        document.getElementById('stats-row').style.display = 'flex';
+        document.getElementById('stat-total').textContent = items.length;
+
+        // Render items
+        mainEl.innerHTML = `<div class="items-grid" id="grid"></div>`;
+        const grid = mainEl.querySelector('#grid');
+
+        items.forEach((item, idx) => {
+          const card = document.createElement('div');
+          card.className = 'item-card';
+          card.style.animation = `fadeUp 0.4s ease ${idx * 0.04}s both`;
+
+          const imageUrl = item.image_url1 || item.image_url2 || item.image_url3;
+          const imageHtml = imageUrl
+            ? `<img class="card-image" src="${imageUrl}" alt="" loading="lazy"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+               <div class="card-image-placeholder" style="display:none">◻</div>`
+            : `<div class="card-image-placeholder">◻</div>`;
+
+          const titleParts = [
+            item.categories?.name,
+            item.variant && item.variant !== "none" ? item.variant : null
+          ].filter(Boolean);
+
+          const metaTags = [
+            item.materials?.name ? `<span class="meta-tag">${item.materials.name}</span>` : "",
+            item.size            ? `<span class="meta-tag">${item.size}"</span>` : "",
+            item.born_on_date    ? `<span class="meta-tag">${item.born_on_date}</span>` : "",
+          ].filter(Boolean).join("");
+
+          const msrp = item.msrp ? `<span class="card-msrp">$${parseFloat(item.msrp).toFixed(2)}</span>` : "";
+
+          card.innerHTML = `
+            ${imageHtml}
+            <div class="card-body">
+              <div class="card-category">${item.categories?.name || 'Item'}</div>
+              <div class="card-title">${escapeHtml(titleParts.join(" — ") || "Item")}</div>
+              <div class="card-meta">${metaTags}</div>
+            </div>
+            <div class="card-footer">
+              ${msrp}
+            </div>
+          `;
+
+          const link = document.createElement('a');
+          link.href = `item.html?id=${encodeURIComponent(item.id)}`;
+          link.className = 'item-card-link';
+          link.appendChild(card);
+          grid.appendChild(link);
+        });
+
+      } catch (error) {
+        console.error('Error fetching items:', error);
+        loadMsg.style.display = 'none';
+        mainEl.innerHTML = `
+          <div class="error-msg">
+            <div class="icon">✕</div>
+            Error loading items:<br>
+            <small>${error.message}</small>
+          </div>`;
+      }
+    }
+
+    // Initialize page
+    async function init() {
+      const username = getUsernameFromUrl();
+
+      if (!username) {
+        const mainEl = document.getElementById('content');
+        const loadMsg = document.getElementById('loading-msg');
+        loadMsg.style.display = 'none';
+        mainEl.innerHTML = `
+          <div class="error-msg">
+            <div class="icon">✕</div>
+            No username provided. Please use: user.html?username=xyz
+          </div>`;
+        return;
+      }
+
+      // Update page title and header
+      displayUsername = username.charAt(0).toUpperCase() + username.slice(1);
+      document.getElementById('display-username').textContent = displayUsername;
+      document.title = `${displayUsername}'s Collection`;
+
+      // Apply theme preference
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata) {
+          syncThemeFromUser(user.user_metadata);
+        }
+      } catch (e) {
+        // No auth required for viewing public collections
+      }
+
+      // Fetch and display items
+      fetchUserItems(username);
+    }
+
+    // Run on page load
+    init();
+  </script>
+
+</body>
+</html>
