@@ -1,0 +1,355 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   NAVIGATION.CSS - Unified Navigation System for Showoffy
+   ═══════════════════════════════════════════════════════════════════════════
+   
+   This stylesheet consolidates ALL navigation styling across the site.
+   Previously scattered across 10+ HTML files in <style> blocks.
+   
+   Import this in <head> of all pages:
+   <link rel="stylesheet" href="css/navigation.css">
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ─ TOPBAR: Main Navigation Container ─ */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 58px;
+  background: var(--surface, #18181b);
+  border-bottom: 1px solid var(--border, #2a2a2e);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+
+/* ─ Left Section: Logo & Back Navigation ─ */
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+}
+
+/* ─ Right Section: User Actions & Signout ─ */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* ─ Logo: Brand Home Link ─ */
+.logo {
+  font-family: var(--font-primary, 'Bebas Neue', sans-serif);
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  color: var(--accent, #c8964a);
+  text-decoration: none;
+  margin-right: 32px;
+  transition: opacity 0.2s, color 0.2s;
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+/* ─ Logo: Minimal Variant (account, settings pages) ─ */
+.topbar-minimal .logo {
+  margin-right: auto;
+}
+
+/* ─ Back Button/Link ─ */
+.back-btn,
+.back-link {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #9a9896);
+  text-decoration: none;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  cursor: pointer;
+  font-family: var(--font-body, 'Lato', sans-serif);
+  white-space: nowrap;
+  margin-right: 16px;
+}
+
+.back-btn:hover,
+.back-link:hover {
+  color: var(--text, #f0ede8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ─ Navigation Links Container ─ */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─ Individual Navigation Link ─ */
+.nav-link {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted, #9a9896);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body, 'Lato', sans-serif);
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--text, #f0ede8);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: var(--accent, #c8964a);
+}
+
+/* ─ Special: Signout Button ─ */
+.nav-link-signout,
+#signout-btn {
+  margin-left: 4px;
+}
+
+.nav-link-signout:hover,
+#signout-btn:hover {
+  color: var(--danger, #b85450);
+  background: rgba(184, 84, 80, 0.1);
+}
+
+/* ─ User Email Display ─ */
+.topbar-email {
+  font-size: 12px;
+  color: var(--muted, #9a9896);
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+/* ─ Visual Divider ─ */
+.nav-divider {
+  color: var(--border, #2a2a2e);
+  margin: 0 4px;
+}
+
+/* ─ Navigation: Authenticated User Variant ─ */
+.topbar-authenticated {
+  /* Standard layout applies */
+}
+
+/* ─ Navigation: With Back Button Variant ─ */
+.topbar-with-back {
+  /* Standard layout applies */
+}
+
+/* ─ Navigation: Minimal Variant (no nav links) ─ */
+.topbar-minimal {
+  justify-content: flex-start;
+  gap: 32px;
+}
+
+.topbar-minimal .topbar-right {
+  display: none;
+}
+
+/* ─ Navigation: Main Nav Container (optional, for nav-links wrapper) ─ */
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE: Mobile/Tablet Adjustments
+   ═════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+    height: 52px;
+  }
+
+  .logo {
+    font-size: 18px;
+    margin-right: 16px;
+  }
+
+  .nav-link {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .topbar-email {
+    font-size: 11px;
+  }
+
+  .back-btn,
+  .back-link {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 12px;
+    height: 48px;
+    gap: 8px;
+  }
+
+  .logo {
+    font-size: 16px;
+    margin-right: 12px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .topbar-email {
+    font-size: 10px;
+    display: none; /* Hide email on very small screens */
+  }
+
+  .back-btn,
+  .back-link {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .nav-divider {
+    display: none;
+  }
+
+  /* Stack navigation vertically if needed */
+  .topbar-nav {
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface, #18181b);
+    border: 1px solid var(--border, #2a2a2e);
+    border-radius: 0 0 6px 6px;
+    padding: 8px 0;
+    gap: 0;
+    min-width: 120px;
+    display: none; /* Hidden by default, shown via JS */
+  }
+
+  .topbar-nav.active {
+    display: flex;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THEME SUPPORT: Dark/Light Mode (if applicable)
+   ═════════════════════════════════════════════════════════════════════════ */
+
+[data-theme="light"] .topbar {
+  background: #ffffff;
+  border-bottom-color: #e5e7eb;
+}
+
+[data-theme="light"] .logo {
+  color: #c8964a;
+}
+
+[data-theme="light"] .nav-link,
+[data-theme="light"] .back-btn,
+[data-theme="light"] .back-link,
+[data-theme="light"] .topbar-email {
+  color: #6b7280;
+}
+
+[data-theme="light"] .nav-link:hover,
+[data-theme="light"] .back-btn:hover,
+[data-theme="light"] .back-link:hover {
+  color: #111827;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .nav-link.active {
+  color: #c8964a;
+}
+
+[data-theme="light"] .nav-divider {
+  color: #d1d5db;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY & FOCUS STATES
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nav-link:focus,
+.back-btn:focus,
+.back-link:focus,
+#signout-btn:focus {
+  outline: 2px solid var(--accent, #c8964a);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Skip to main content link (for accessibility) */
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent, #c8964a);
+  color: var(--bg, #0f0f10);
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATION & TRANSITIONS
+   ═════════════════════════════════════════════════════════════════════════ */
+
+.nav-link {
+  transition: all 0.2s ease;
+}
+
+.logo {
+  transition: all 0.2s ease;
+}
+
+/* Smooth entrance animation for topbar */
+@keyframes slideDownTopbar {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topbar {
+  animation: slideDownTopbar 0.3s ease-out;
+}
+
+/* ═════════════════════════════════════════════════════════════════════════ */
