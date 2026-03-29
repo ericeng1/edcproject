@@ -62,13 +62,22 @@
     }
 
     .topbar-brand {
-      font-family: var(--font-primary), sans-serif;
+      font-family: var(--font-primary);
       font-size: 22px;
       letter-spacing: 0.12em;
       color: var(--accent);
       text-decoration: none;
-      text-transform: uppercase;
-      font-weight: 400;
+      margin-right: 32px;
+    }
+
+    /* Logo styling - same as home.html */
+    .logo {
+      font-family: var(--font-primary);
+      font-size: 22px;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+      margin-right: 32px;
     }
 
     .topbar-right {
@@ -385,7 +394,7 @@
 <body>
 
   <header class="topbar">
-    <a href="home.html" style="text-decoration:none;" class="topbar-brand">SHOWOFFY</a>
+    <a href="home.html" style="text-decoration:none;" class="logo">Showoffy</a>
     <div class="topbar-right">
       <a href="home.html" class="btn-ghost">← Home</a>
     </div>
@@ -568,6 +577,8 @@
                 <div class="card-category">${escapeHtml(item.categories?.name || 'Item')}</div>
                 <div class="card-title">${escapeHtml(titleParts.join(" — ") || "Item")}</div>
                 <div class="card-meta">${metaTags}</div>
+              </div>
+              <div class="card-footer">
               </div>
             `;
 
