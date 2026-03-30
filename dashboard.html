@@ -86,7 +86,7 @@
 
   <script type="module">
     import { supabase } from "./supabaseClient.js";
-    import { syncThemeFromUser } from "./theme.js";
+    import { syncThemeFromUser } from "js/theme.js";
 
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
